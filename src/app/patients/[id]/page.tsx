@@ -4,16 +4,18 @@
 import { useEffect, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { getPatient, updatePatient, getClinics, getConsultationsForPatient } from '@/lib/db'
+import { patientUpdateSchema } from '@/lib/validation'
 import type { Patient, Clinic, Consultation, PipelineStage } from '@/types'
 import { PIPELINE_STAGES, CHANNEL_LABELS } from '@/types'
 import Link from 'next/link'
 import ProgressStatusBar from '@/app/components/ProgressStatusBar'
+import { ErrorBoundary } from '@/app/components/ErrorBoundary'
 
 const STAGE_COLOR: Record<string, string> = Object.fromEntries(
   PIPELINE_STAGES.map(s => [s.key, s.color])
 )
 
-export default function PatientDetailPage() {
+function PatientDetailContent() {
   const { id } = useParams<{ id: string }>()
   const router = useRouter()
   const [patient, setPatient] = useState<Patient | null>(null)
@@ -21,6 +23,7 @@ export default function PatientDetailPage() {
   const [consultations, setConsultations] = useState<Consultation[]>([])
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
+  const [saveError, setSaveError] = useState('')
   const [edits, setEdits] = useState<Partial<Patient>>({})
   const [dirty, setDirty] = useState(false)
 
@@ -43,12 +46,21 @@ export default function PatientDetailPage() {
 
   const save = async () => {
     if (!patient || !dirty) return
+    setSaveError('')
+    const result = patientUpdateSchema.safeParse(edits)
+    if (!result.success) {
+      const msgs = result.error.issues.map(i => `${String(i.path[0])}: ${i.message}`)
+      setSaveError(msgs.join(' · '))
+      return
+    }
     setSaving(true)
     try {
       const updated = await updatePatient(patient.id, edits)
       setPatient(updated)
       setEdits({})
       setDirty(false)
+    } catch (e: unknown) {
+      setSaveError(e instanceof Error ? e.message : 'Failed to save')
     } finally {
       setSaving(false)
     }
@@ -82,15 +94,20 @@ export default function PatientDetailPage() {
               {PIPELINE_STAGES.find(s => s.key === stage)?.label}
             </span>
           </div>
-          {dirty && (
-            <button
-              onClick={save}
-              disabled={saving}
-              className="bg-indigo-600 hover:bg-indigo-700 disabled:opacity-60 text-white text-sm font-semibold px-5 py-2 rounded-xl transition-colors"
-            >
-              {saving ? 'Saving…' : 'Save changes'}
-            </button>
-          )}
+          <div className="flex items-center gap-3">
+            {saveError && (
+              <p className="text-xs text-red-500 max-w-sm">{saveError}</p>
+            )}
+            {dirty && (
+              <button
+                onClick={save}
+                disabled={saving}
+                className="bg-indigo-600 hover:bg-indigo-700 disabled:opacity-60 text-white text-sm font-semibold px-5 py-2 rounded-xl transition-colors"
+              >
+                {saving ? 'Saving…' : 'Save changes'}
+              </button>
+            )}
+          </div>
         </div>
       </div>
 
@@ -280,6 +297,10 @@ export default function PatientDetailPage() {
       </div>
     </div>
   )
+}
+
+export default function PatientDetailPage() {
+  return <ErrorBoundary><PatientDetailContent /></ErrorBoundary>
 }
 
 // Shared primitives

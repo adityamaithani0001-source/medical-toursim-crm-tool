@@ -4,12 +4,13 @@
 import { useEffect, useState } from 'react'
 import { getPipelineCounts, getMonthlyVolume, getLeadSourceBreakdown } from '@/lib/db'
 import { PIPELINE_STAGES, SOURCE_LABELS } from '@/types'
+import { ErrorBoundary } from '@/app/components/ErrorBoundary'
 import {
   BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer,
   LineChart, Line, CartesianGrid, Legend,
 } from 'recharts'
 
-export default function AnalyticsPage() {
+function AnalyticsContent() {
   const [stageCounts, setStageCounts] = useState<Record<string, number>>({})
   const [monthly, setMonthly] = useState<{ month: string; leads: number; surgeries: number }[]>([])
   const [sources, setSources] = useState<{ source: string; count: number }[]>([])
@@ -132,4 +133,8 @@ export default function AnalyticsPage() {
       </div>
     </div>
   )
+}
+
+export default function AnalyticsPage() {
+  return <ErrorBoundary><AnalyticsContent /></ErrorBoundary>
 }

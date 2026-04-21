@@ -7,6 +7,7 @@ import { getPatients, updateStage } from '@/lib/db'
 import type { Patient, PipelineStage } from '@/types'
 import { PIPELINE_STAGES } from '@/types'
 import Link from 'next/link'
+import { ErrorBoundary } from '@/app/components/ErrorBoundary'
 
 const PROB_COLOR: Record<string, string> = {
   high:   'bg-emerald-100 text-emerald-800',
@@ -97,7 +98,7 @@ function StageColumn({ stage, patients, onStageChange }: {
   )
 }
 
-export default function DashboardPage() {
+function DashboardContent() {
   const [patients, setPatients] = useState<Patient[]>([])
   const [loading, setLoading] = useState(true)
   const [filterStage, setFilterStage] = useState<PipelineStage | 'all'>('all')
@@ -197,4 +198,8 @@ export default function DashboardPage() {
       )}
     </div>
   )
+}
+
+export default function DashboardPage() {
+  return <ErrorBoundary><DashboardContent /></ErrorBoundary>
 }

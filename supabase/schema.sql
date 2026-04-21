@@ -250,6 +250,47 @@ SELECT cron.schedule(
 );
 
 -- ============================================================
+-- ANALYTICS RPC FUNCTIONS
+-- Server-side aggregation — avoids fetching all rows client-side
+-- Grant EXECUTE to the authenticated role so the client can call them.
+-- ============================================================
+
+CREATE OR REPLACE FUNCTION get_pipeline_counts()
+RETURNS TABLE (pipeline_stage TEXT, count BIGINT)
+LANGUAGE sql SECURITY DEFINER AS $$
+  SELECT pipeline_stage::TEXT, COUNT(*) AS count
+  FROM public.patients
+  GROUP BY pipeline_stage;
+$$;
+
+CREATE OR REPLACE FUNCTION get_monthly_volume()
+RETURNS TABLE (month TEXT, leads BIGINT, surgeries BIGINT)
+LANGUAGE sql SECURITY DEFINER AS $$
+  SELECT
+    TO_CHAR(created_at, 'YYYY-MM') AS month,
+    COUNT(*)                       AS leads,
+    COUNT(*) FILTER (
+      WHERE pipeline_stage IN ('surgery_done', 'post_care')
+    )                              AS surgeries
+  FROM public.patients
+  WHERE created_at >= NOW() - INTERVAL '180 days'
+  GROUP BY TO_CHAR(created_at, 'YYYY-MM')
+  ORDER BY month;
+$$;
+
+CREATE OR REPLACE FUNCTION get_lead_source_breakdown()
+RETURNS TABLE (source TEXT, count BIGINT)
+LANGUAGE sql SECURITY DEFINER AS $$
+  SELECT lead_source::TEXT AS source, COUNT(*) AS count
+  FROM public.patients
+  GROUP BY lead_source;
+$$;
+
+GRANT EXECUTE ON FUNCTION get_pipeline_counts()       TO authenticated;
+GRANT EXECUTE ON FUNCTION get_monthly_volume()        TO authenticated;
+GRANT EXECUTE ON FUNCTION get_lead_source_breakdown() TO authenticated;
+
+-- ============================================================
 -- SEED: insert the fixed Google Meet link as a setting
 -- and a few starter clinics
 -- ============================================================

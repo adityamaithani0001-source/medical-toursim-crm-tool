@@ -4,6 +4,7 @@
 import { useEffect, useState } from 'react'
 import { getConsultations, createConsultation, saveConsultationMemo, getPatients, getClinics } from '@/lib/db'
 import type { Consultation, Patient, Clinic } from '@/types'
+import { ErrorBoundary } from '@/app/components/ErrorBoundary'
 
 const MEET_LINK = process.env.NEXT_PUBLIC_GOOGLE_MEET_LINK ?? 'https://meet.google.com/your-fixed-link'
 
@@ -12,7 +13,7 @@ function needsReminder(c: Consultation) {
   return diff > 0 && diff <= 16 * 60 * 1000 && !c.reminder_sent
 }
 
-export default function ConsultationsPage() {
+function ConsultationsContent() {
   const [consultations, setConsultations] = useState<Consultation[]>([])
   const [patients, setPatients] = useState<Patient[]>([])
   const [clinics, setClinics] = useState<Clinic[]>([])
@@ -218,6 +219,10 @@ export default function ConsultationsPage() {
       </div>
     </div>
   )
+}
+
+export default function ConsultationsPage() {
+  return <ErrorBoundary><ConsultationsContent /></ErrorBoundary>
 }
 
 function Section({ title, count, children }: { title: string; count: number; children: React.ReactNode }) {
