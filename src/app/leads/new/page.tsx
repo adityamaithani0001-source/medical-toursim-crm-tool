@@ -4,16 +4,19 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createPatient } from '@/lib/db'
+import { newLeadSchema } from '@/lib/validation'
 import type { LeadSource, CommsChannel, ConversionProbability } from '@/types'
+import { ErrorBoundary } from '@/app/components/ErrorBoundary'
 
 const CHANNELS: CommsChannel[] = ['whatsapp', 'kakaotalk', 'telegram', 'instagram', 'line', 'wechat', 'email']
 const SOURCES: LeadSource[]    = ['whatsapp', 'email', 'booking_form', 'ad']
 const SURGERY_TYPES = ['Eyes', 'Nose', 'Face', 'Breast', 'Body', 'Other']
 
-export default function NewLeadPage() {
+function NewLeadContent() {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({})
 
   const [form, setForm] = useState({
     name:                   '',
@@ -27,15 +30,29 @@ export default function NewLeadPage() {
     notes:                  '',
   })
 
-  const set = (k: string, v: string) => setForm(f => ({ ...f, [k]: v }))
+  const set = (k: string, v: string) => {
+    setForm(f => ({ ...f, [k]: v }))
+    setFieldErrors(e => { const next = { ...e }; delete next[k]; return next })
+  }
 
   const handleSubmit = async () => {
-    if (!form.name || !form.country || !form.surgery_type) {
-      setError('Name, country, and surgery type are required.')
+    setError('')
+    setFieldErrors({})
+    const result = newLeadSchema.safeParse({
+      ...form,
+      korea_arrival_date: form.korea_arrival_date || null,
+    })
+    if (!result.success) {
+      const errs: Record<string, string> = {}
+      for (const issue of result.error.issues) {
+        const key = String(issue.path[0])
+        if (!errs[key]) errs[key] = issue.message
+      }
+      setFieldErrors(errs)
+      setError('Please fix the errors below.')
       return
     }
     setLoading(true)
-    setError('')
     try {
       const patient = await createPatient({
         ...form,
@@ -83,15 +100,15 @@ export default function NewLeadPage() {
             <div className="grid grid-cols-2 gap-4">
               <div className="col-span-2">
                 <Label>Full name *</Label>
-                <Input value={form.name} onChange={v => set('name', v)} placeholder="Kim Soo-jin" />
+                <Input value={form.name} onChange={v => set('name', v)} placeholder="Kim Soo-jin" error={fieldErrors.name} />
               </div>
               <div>
                 <Label>Country *</Label>
-                <Input value={form.country} onChange={v => set('country', v)} placeholder="Indonesia" />
+                <Input value={form.country} onChange={v => set('country', v)} placeholder="Indonesia" error={fieldErrors.country} />
               </div>
               <div>
                 <Label>Language</Label>
-                <Input value={form.language} onChange={v => set('language', v)} placeholder="Bahasa Indonesia" />
+                <Input value={form.language} onChange={v => set('language', v)} placeholder="Bahasa Indonesia" error={fieldErrors.language} />
               </div>
             </div>
           </div>
@@ -114,7 +131,7 @@ export default function NewLeadPage() {
               </div>
               <div>
                 <Label>Surgery type *</Label>
-                <Select value={form.surgery_type} onChange={v => set('surgery_type', v)}>
+                <Select value={form.surgery_type} onChange={v => set('surgery_type', v)} error={fieldErrors.surgery_type}>
                   <option value="">Select…</option>
                   {SURGERY_TYPES.map(t => <option key={t} value={t.toLowerCase()}>{t}</option>)}
                 </Select>
@@ -139,6 +156,7 @@ export default function NewLeadPage() {
                 type="date"
                 value={form.korea_arrival_date}
                 onChange={v => set('korea_arrival_date', v)}
+                error={fieldErrors.korea_arrival_date}
               />
               <p className="text-xs text-gray-400 mt-1">Most critical qualifying factor per spec</p>
             </div>
@@ -154,6 +172,7 @@ export default function NewLeadPage() {
               value={form.notes}
               onChange={e => set('notes', e.target.value)}
             />
+            {fieldErrors.notes && <FieldError>{fieldErrors.notes}</FieldError>}
           </div>
 
           {error && (
@@ -183,40 +202,56 @@ export default function NewLeadPage() {
   )
 }
 
+export default function NewLeadPage() {
+  return <ErrorBoundary><NewLeadContent /></ErrorBoundary>
+}
+
 // Tiny shared form primitives
 function Label({ children }: { children: React.ReactNode }) {
   return <label className="block text-xs font-medium text-gray-600 mb-1.5">{children}</label>
 }
 
-function Input({ value, onChange, placeholder, type = 'text' }: {
+function FieldError({ children }: { children: React.ReactNode }) {
+  return <p className="mt-1 text-xs text-red-500">{children}</p>
+}
+
+function Input({ value, onChange, placeholder, type = 'text', error }: {
   value: string
   onChange: (v: string) => void
   placeholder?: string
   type?: string
+  error?: string
 }) {
   return (
-    <input
-      type={type}
-      value={value}
-      onChange={e => onChange(e.target.value)}
-      placeholder={placeholder}
-      className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-300"
-    />
+    <>
+      <input
+        type={type}
+        value={value}
+        onChange={e => onChange(e.target.value)}
+        placeholder={placeholder}
+        className={`w-full border rounded-xl px-4 py-2.5 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-300 ${error ? 'border-red-300 bg-red-50' : 'border-gray-200'}`}
+      />
+      {error && <FieldError>{error}</FieldError>}
+    </>
   )
 }
 
-function Select({ value, onChange, children }: {
+function Select({ value, onChange, children, error }: {
   value: string
   onChange: (v: string) => void
   children: React.ReactNode
+  error?: string
 }) {
   return (
-    <select
-      value={value}
-      onChange={e => onChange(e.target.value)}
-      className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-300 bg-white"
-    >
-      {children}
-    </select>
+    <>
+      <select
+        value={value}
+        onChange={e => onChange(e.target.value)}
+        className={`w-full border rounded-xl px-4 py-2.5 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-300 bg-white ${error ? 'border-red-300 bg-red-50' : 'border-gray-200'}`}
+      >
+        {children}
+      </select>
+      {error && <FieldError>{error}</FieldError>}
+    </>
   )
 }

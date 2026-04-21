@@ -5,9 +5,14 @@
 import { useState, useRef, useCallback } from 'react'
 import Link from 'next/link'
 import { importPatients } from '@/lib/db'
+import { csvRowSchema } from '@/lib/validation'
 import type { LeadSource, CommsChannel, ConversionProbability } from '@/types'
+import { ErrorBoundary } from '@/app/components/ErrorBoundary'
 
 // ── Constants ────────────────────────────────────────────────────────────────
+
+const MAX_FILE_BYTES = 5 * 1024 * 1024   // 5 MB
+const MAX_ROWS       = 1_000
 
 const VALID_SOURCES:  LeadSource[]           = ['whatsapp', 'email', 'booking_form', 'ad']
 const VALID_CHANNELS: CommsChannel[]         = ['whatsapp', 'kakaotalk', 'telegram', 'instagram', 'line', 'wechat', 'email']
@@ -97,32 +102,48 @@ interface ParsedRow {
 }
 
 function mapRow(raw: Record<string, string>, index: number): ParsedRow {
-  const errors: string[] = []
-
-  const name         = pick(raw, 'name', 'full_name', 'patient_name')
-  const country      = pick(raw, 'country')
-  const surgery_type = pick(raw, 'surgery_type', 'surgery')
-
-  if (!name)         errors.push('Name is required')
-  if (!country)      errors.push('Country is required')
-  if (!surgery_type) errors.push('Surgery type is required')
-
-  const rawSource  = pick(raw, 'lead_source', 'source')
-  const rawChannel = pick(raw, 'preferred_channel', 'channel')
-  const rawProb    = pick(raw, 'conversion_probability', 'probability', 'prob')
   const rawArrival = pick(raw, 'korea_arrival_date', 'arrival_date', 'arrival')
+
+  const input = {
+    name:                   pick(raw, 'name', 'full_name', 'patient_name'),
+    country:                pick(raw, 'country'),
+    language:               pick(raw, 'language') || undefined,
+    surgery_type:           pick(raw, 'surgery_type', 'surgery'),
+    lead_source:            pick(raw, 'lead_source', 'source') || undefined,
+    preferred_channel:      pick(raw, 'preferred_channel', 'channel') || undefined,
+    conversion_probability: pick(raw, 'conversion_probability', 'probability', 'prob') || undefined,
+    korea_arrival_date:     rawArrival || undefined,
+    notes:                  pick(raw, 'notes', 'note') || undefined,
+  }
+
+  const result = csvRowSchema.safeParse(input)
+  const errors: string[] = result.success
+    ? []
+    : result.error.issues.map(i => `${String(i.path[0])}: ${i.message}`)
+
+  const parsed = result.success ? result.data : {
+    name:                   input.name,
+    country:                input.country,
+    language:               input.language,
+    surgery_type:           input.surgery_type,
+    lead_source:            (VALID_SOURCES.includes(input.lead_source as LeadSource) ? input.lead_source : 'email') as LeadSource,
+    preferred_channel:      (VALID_CHANNELS.includes(input.preferred_channel as CommsChannel) ? input.preferred_channel : 'email') as CommsChannel,
+    conversion_probability: (VALID_PROBS.includes(input.conversion_probability as ConversionProbability) ? input.conversion_probability : 'medium') as ConversionProbability,
+    korea_arrival_date:     rawArrival || null,
+    notes:                  input.notes,
+  }
 
   return {
     index,
-    name,
-    country,
-    language:               pick(raw, 'language') || country,
-    surgery_type,
-    lead_source:            VALID_SOURCES.includes(rawSource as LeadSource)   ? rawSource as LeadSource   : 'email',
-    preferred_channel:      VALID_CHANNELS.includes(rawChannel as CommsChannel) ? rawChannel as CommsChannel : 'email',
-    conversion_probability: VALID_PROBS.includes(rawProb as ConversionProbability) ? rawProb as ConversionProbability : 'medium',
-    korea_arrival_date:     rawArrival || null,
-    notes:                  pick(raw, 'notes', 'note'),
+    name:                   parsed.name ?? '',
+    country:                parsed.country ?? '',
+    language:               parsed.language ?? parsed.country ?? '',
+    surgery_type:           parsed.surgery_type ?? '',
+    lead_source:            parsed.lead_source ?? 'email',
+    preferred_channel:      parsed.preferred_channel ?? 'email',
+    conversion_probability: parsed.conversion_probability ?? 'medium',
+    korea_arrival_date:     parsed.korea_arrival_date ?? null,
+    notes:                  parsed.notes ?? '',
     errors,
   }
 }
@@ -147,7 +168,7 @@ const PROB_STYLE: Record<ConversionProbability, string> = {
 
 type Stage = 'idle' | 'preview' | 'importing' | 'done'
 
-export default function ImportPage() {
+function ImportContent() {
   const fileRef  = useRef<HTMLInputElement>(null)
   const [stage,     setStage]     = useState<Stage>('idle')
   const [rows,      setRows]      = useState<ParsedRow[]>([])
@@ -160,8 +181,12 @@ export default function ImportPage() {
 
   const processFile = useCallback((file: File) => {
     setFileError('')
-    if (!file.name.endsWith('.csv')) {
+    if (!file.name.toLowerCase().endsWith('.csv')) {
       setFileError('Please upload a .csv file.')
+      return
+    }
+    if (file.size > MAX_FILE_BYTES) {
+      setFileError(`File too large (${(file.size / 1024 / 1024).toFixed(1)} MB). Maximum allowed size is 5 MB.`)
       return
     }
     setFileName(file.name)
@@ -171,6 +196,10 @@ export default function ImportPage() {
       const raw  = parseCSV(text)
       if (raw.length === 0) {
         setFileError('No data rows found. Make sure the file has a header row and at least one data row.')
+        return
+      }
+      if (raw.length > MAX_ROWS) {
+        setFileError(`Too many rows (${raw.length.toLocaleString()}). Maximum per import is ${MAX_ROWS.toLocaleString()}. Split the file into smaller batches.`)
         return
       }
       setRows(raw.map((r, i) => mapRow(r, i + 1)))
@@ -487,4 +516,8 @@ export default function ImportPage() {
       </div>
     </div>
   )
+}
+
+export default function ImportPage() {
+  return <ErrorBoundary><ImportContent /></ErrorBoundary>
 }

@@ -135,51 +135,39 @@ export async function saveConsultationMemo(id: string, memo: string, clinicId?: 
 }
 
 // ── ANALYTICS ────────────────────────────────────────────────
+// All aggregation is done in Postgres via RPC functions defined in
+// supabase/schema.sql — avoids loading every row client-side.
 
 export async function getPipelineCounts() {
-  const { data, error } = await db()
-    .from('patients')
-    .select('pipeline_stage')
+  const { data, error } = await db().rpc('get_pipeline_counts')
   if (error) throw error
 
   const counts: Record<string, number> = {}
-  for (const row of data) {
-    counts[row.pipeline_stage] = (counts[row.pipeline_stage] ?? 0) + 1
+  for (const row of data as { pipeline_stage: string; count: number }[]) {
+    counts[row.pipeline_stage] = Number(row.count)
   }
   return counts
 }
 
 export async function getMonthlyVolume() {
-  const { data, error } = await db()
-    .from('patients')
-    .select('created_at, pipeline_stage')
-    .gte('created_at', new Date(Date.now() - 180 * 24 * 60 * 60 * 1000).toISOString())
+  const { data, error } = await db().rpc('get_monthly_volume')
   if (error) throw error
 
-  // Group by month
-  const byMonth: Record<string, { leads: number; surgeries: number }> = {}
-  for (const row of data) {
-    const month = row.created_at.slice(0, 7)
-    if (!byMonth[month]) byMonth[month] = { leads: 0, surgeries: 0 }
-    byMonth[month].leads++
-    if (row.pipeline_stage === 'surgery_done' || row.pipeline_stage === 'post_care') {
-      byMonth[month].surgeries++
-    }
-  }
-  return Object.entries(byMonth)
-    .sort(([a], [b]) => a.localeCompare(b))
-    .map(([month, v]) => ({ month, ...v }))
+  return (data as { month: string; leads: number; surgeries: number }[]).map(r => ({
+    month:     r.month,
+    leads:     Number(r.leads),
+    surgeries: Number(r.surgeries),
+  }))
 }
 
 export async function getLeadSourceBreakdown() {
-  const { data, error } = await db().from('patients').select('lead_source')
+  const { data, error } = await db().rpc('get_lead_source_breakdown')
   if (error) throw error
 
-  const counts: Record<string, number> = {}
-  for (const row of data) {
-    counts[row.lead_source] = (counts[row.lead_source] ?? 0) + 1
-  }
-  return Object.entries(counts).map(([source, count]) => ({ source, count }))
+  return (data as { source: string; count: number }[]).map(r => ({
+    source: r.source,
+    count:  Number(r.count),
+  }))
 }
 
 // ── CLINICS & PROFILES ───────────────────────────────────────
