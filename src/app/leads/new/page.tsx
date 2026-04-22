@@ -129,12 +129,13 @@ function NewLeadContent() {
                   {CHANNELS.map(c => <option key={c} value={c}>{c}</option>)}
                 </Select>
               </div>
-              <div>
+              <div className="col-span-2">
                 <Label>Surgery type *</Label>
-                <Select value={form.surgery_type} onChange={v => set('surgery_type', v)} error={fieldErrors.surgery_type}>
-                  <option value="">Select…</option>
-                  {SURGERY_TYPES.map(t => <option key={t} value={t.toLowerCase()}>{t}</option>)}
-                </Select>
+                <SurgeryMultiSelect
+                  value={form.surgery_type}
+                  onChange={v => set('surgery_type', v)}
+                  error={fieldErrors.surgery_type}
+                />
               </div>
               <div>
                 <Label>Conversion probability</Label>
@@ -251,6 +252,48 @@ function Select({ value, onChange, children, error }: {
       >
         {children}
       </select>
+      {error && <FieldError>{error}</FieldError>}
+    </>
+  )
+}
+
+function SurgeryMultiSelect({ value, onChange, error }: {
+  value: string
+  onChange: (v: string) => void
+  error?: string
+}) {
+  const selected = value ? value.split(',').map(s => s.trim()).filter(Boolean) : []
+  const toggle = (type: string) => {
+    const lower = type.toLowerCase()
+    const next = selected.includes(lower)
+      ? selected.filter(s => s !== lower)
+      : [...selected, lower]
+    onChange(next.join(','))
+  }
+  return (
+    <>
+      <div className={`flex flex-wrap gap-2 p-3 border rounded-xl ${error ? 'border-red-300 bg-red-50' : 'border-gray-200'}`}>
+        {SURGERY_TYPES.map(t => {
+          const isSelected = selected.includes(t.toLowerCase())
+          return (
+            <button
+              key={t}
+              type="button"
+              onClick={() => toggle(t)}
+              className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors ${
+                isSelected
+                  ? 'bg-indigo-600 text-white border-indigo-600'
+                  : 'bg-white text-gray-600 border-gray-200 hover:border-indigo-300 hover:text-indigo-600'
+              }`}
+            >
+              {t}
+            </button>
+          )
+        })}
+      </div>
+      {selected.length === 0 && !error && (
+        <p className="mt-1 text-xs text-gray-400">Select one or more surgery types</p>
+      )}
       {error && <FieldError>{error}</FieldError>}
     </>
   )

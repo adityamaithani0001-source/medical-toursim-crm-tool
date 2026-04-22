@@ -1,8 +1,9 @@
 'use client'
 // src/app/analytics/page.tsx
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { getPipelineCounts, getMonthlyVolume, getLeadSourceBreakdown } from '@/lib/db'
+import { getSupabaseClient } from '@/lib/supabase'
 import { PIPELINE_STAGES, SOURCE_LABELS } from '@/types'
 import { ErrorBoundary } from '@/app/components/ErrorBoundary'
 import {
@@ -15,12 +16,31 @@ function AnalyticsContent() {
   const [monthly, setMonthly] = useState<{ month: string; leads: number; surgeries: number }[]>([])
   const [sources, setSources] = useState<{ source: string; count: number }[]>([])
   const [loading, setLoading] = useState(true)
+  const [lastUpdated, setLastUpdated] = useState<Date | null>(null)
+
+  const fetchAll = useCallback(() => {
+    return Promise.all([getPipelineCounts(), getMonthlyVolume(), getLeadSourceBreakdown()])
+      .then(([s, m, src]) => {
+        setStageCounts(s)
+        setMonthly(m)
+        setSources(src as typeof sources)
+        setLastUpdated(new Date())
+      })
+  }, [])
 
   useEffect(() => {
-    Promise.all([getPipelineCounts(), getMonthlyVolume(), getLeadSourceBreakdown()])
-      .then(([s, m, src]) => { setStageCounts(s); setMonthly(m); setSources(src as typeof sources) })
-      .finally(() => setLoading(false))
-  }, [])
+    fetchAll().finally(() => setLoading(false))
+
+    const supabase = getSupabaseClient()
+    const channel = supabase
+      .channel('analytics-realtime')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'patients' }, () => {
+        fetchAll()
+      })
+      .subscribe()
+
+    return () => { supabase.removeChannel(channel) }
+  }, [fetchAll])
 
   const funnelData = PIPELINE_STAGES.map(s => ({
     label: s.label,
@@ -49,7 +69,17 @@ function AnalyticsContent() {
   return (
     <div className="min-h-screen bg-gray-50 px-6 py-8">
       <div className="max-w-6xl mx-auto">
-        <h1 className="text-2xl font-bold text-gray-900 mb-8">Analytics</h1>
+        <div className="flex items-center justify-between mb-8">
+          <h1 className="text-2xl font-bold text-gray-900">Analytics</h1>
+          <div className="flex items-center gap-2">
+            <span className="inline-block w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+            <span className="text-xs text-gray-400">
+              {lastUpdated
+                ? `Updated ${lastUpdated.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}`
+                : 'Syncing…'}
+            </span>
+          </div>
+        </div>
 
         {/* KPI cards */}
         <div className="grid grid-cols-4 gap-4 mb-8">
