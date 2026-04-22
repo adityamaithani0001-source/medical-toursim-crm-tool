@@ -7,6 +7,16 @@ import { getPatient, updatePatient, getClinics, getConsultationsForPatient } fro
 import { patientUpdateSchema } from '@/lib/validation'
 import type { Patient, Clinic, Consultation, PipelineStage } from '@/types'
 import { PIPELINE_STAGES, CHANNEL_LABELS } from '@/types'
+
+const SURGERY_TYPES = ['Eyes', 'Nose', 'Face', 'Breast', 'Body', 'Other']
+
+function formatSurgeryTypes(value: string | null | undefined): string {
+  if (!value) return ''
+  return value.split(',').map(s => {
+    const t = s.trim()
+    return t.charAt(0).toUpperCase() + t.slice(1)
+  }).join(', ')
+}
 import Link from 'next/link'
 import ProgressStatusBar from '@/app/components/ProgressStatusBar'
 import { ErrorBoundary } from '@/app/components/ErrorBoundary'
@@ -85,7 +95,7 @@ function PatientDetailContent() {
             <button onClick={() => router.back()} className="text-gray-400 hover:text-gray-600 text-lg">←</button>
             <div>
               <h1 className="text-lg font-bold text-gray-900">{patient.name}</h1>
-              <p className="text-xs text-gray-400">{patient.country} · {patient.surgery_type}</p>
+              <p className="text-xs text-gray-400">{patient.country} · {formatSurgeryTypes(patient.surgery_type)}</p>
             </div>
             <span
               className="text-xs font-semibold px-3 py-1 rounded-full text-white"
@@ -141,7 +151,10 @@ function PatientDetailContent() {
                 <Input value={val('language')} onChange={v => set('language', v)} />
               </Field>
               <Field label="Surgery type">
-                <Input value={val('surgery_type')} onChange={v => set('surgery_type', v)} />
+                <SurgeryMultiSelect
+                  value={val('surgery_type') ?? ''}
+                  onChange={v => set('surgery_type', v)}
+                />
               </Field>
               <Field label="Preferred channel">
                 <SelectField value={val('preferred_channel')} onChange={v => set('preferred_channel', v)}>
@@ -370,5 +383,40 @@ function Checkbox({ label, checked, onChange }: { label: string; checked: boolea
       />
       <span className="text-sm text-gray-700">{label}</span>
     </label>
+  )
+}
+
+function SurgeryMultiSelect({ value, onChange }: {
+  value: string
+  onChange: (v: string) => void
+}) {
+  const selected = value ? value.split(',').map(s => s.trim()).filter(Boolean) : []
+  const toggle = (type: string) => {
+    const lower = type.toLowerCase()
+    const next = selected.includes(lower)
+      ? selected.filter(s => s !== lower)
+      : [...selected, lower]
+    onChange(next.join(','))
+  }
+  return (
+    <div className="flex flex-wrap gap-1.5 p-2 border border-gray-200 rounded-xl min-h-[42px]">
+      {SURGERY_TYPES.map(t => {
+        const isSelected = selected.includes(t.toLowerCase())
+        return (
+          <button
+            key={t}
+            type="button"
+            onClick={() => toggle(t)}
+            className={`px-2.5 py-1 rounded-lg text-xs font-medium border transition-colors ${
+              isSelected
+                ? 'bg-indigo-600 text-white border-indigo-600'
+                : 'bg-white text-gray-600 border-gray-200 hover:border-indigo-300 hover:text-indigo-600'
+            }`}
+          >
+            {t}
+          </button>
+        )
+      })}
+    </div>
   )
 }

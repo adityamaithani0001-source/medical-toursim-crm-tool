@@ -27,7 +27,7 @@ function PatientCard({ patient, onStageChange }: {
         <div className="flex items-start justify-between mb-2">
           <div>
             <p className="font-semibold text-gray-900 text-sm">{patient.name}</p>
-            <p className="text-xs text-gray-500 mt-0.5">{patient.country} · {patient.surgery_type}</p>
+            <p className="text-xs text-gray-500 mt-0.5">{patient.country} · {patient.surgery_type.split(',').map(s => { const t = s.trim(); return t.charAt(0).toUpperCase() + t.slice(1) }).join(', ')}</p>
           </div>
           <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${PROB_COLOR[patient.conversion_probability]}`}>
             {patient.conversion_probability}
