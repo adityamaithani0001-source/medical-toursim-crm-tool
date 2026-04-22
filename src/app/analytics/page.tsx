@@ -16,6 +16,7 @@ function AnalyticsContent() {
   const [monthly, setMonthly] = useState<{ month: string; leads: number; surgeries: number }[]>([])
   const [sources, setSources] = useState<{ source: string; count: number }[]>([])
   const [loading, setLoading] = useState(true)
+  const [fetchError, setFetchError] = useState<string | null>(null)
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null)
 
   const fetchAll = useCallback(() => {
@@ -25,6 +26,10 @@ function AnalyticsContent() {
         setMonthly(m)
         setSources(src as typeof sources)
         setLastUpdated(new Date())
+        setFetchError(null)
+      })
+      .catch((err: Error) => {
+        setFetchError(err.message ?? 'Failed to load analytics data')
       })
   }, [])
 
@@ -80,6 +85,12 @@ function AnalyticsContent() {
             </span>
           </div>
         </div>
+
+        {fetchError && (
+          <div className="mb-6 rounded-xl bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700">
+            {fetchError}
+          </div>
+        )}
 
         {/* KPI cards */}
         <div className="grid grid-cols-4 gap-4 mb-8">
