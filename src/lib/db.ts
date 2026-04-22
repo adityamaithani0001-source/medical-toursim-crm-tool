@@ -135,39 +135,77 @@ export async function saveConsultationMemo(id: string, memo: string, clinicId?: 
 }
 
 // ── ANALYTICS ────────────────────────────────────────────────
-// All aggregation is done in Postgres via RPC functions defined in
-// supabase/schema.sql — avoids loading every row client-side.
+// Tries Postgres RPC first; falls back to direct table queries
+// so analytics work even when RPCs aren't deployed or the caller
+// is using the anon role (which lacks EXECUTE permission).
 
-export async function getPipelineCounts() {
+export async function getPipelineCounts(): Promise<Record<string, number>> {
   const { data, error } = await db().rpc('get_pipeline_counts')
-  if (error) throw error
+  if (!error && data) {
+    const counts: Record<string, number> = {}
+    for (const row of data as { pipeline_stage: string; count: number }[]) {
+      counts[row.pipeline_stage] = Number(row.count)
+    }
+    return counts
+  }
 
+  const { data: rows, error: e2 } = await db().from('patients').select('pipeline_stage')
+  if (e2) throw e2
   const counts: Record<string, number> = {}
-  for (const row of data as { pipeline_stage: string; count: number }[]) {
-    counts[row.pipeline_stage] = Number(row.count)
+  for (const r of (rows ?? [])) {
+    counts[r.pipeline_stage] = (counts[r.pipeline_stage] ?? 0) + 1
   }
   return counts
 }
 
-export async function getMonthlyVolume() {
+export async function getMonthlyVolume(): Promise<{ month: string; leads: number; surgeries: number }[]> {
   const { data, error } = await db().rpc('get_monthly_volume')
-  if (error) throw error
+  if (!error && data) {
+    return (data as { month: string; leads: number; surgeries: number }[]).map(r => ({
+      month:     r.month,
+      leads:     Number(r.leads),
+      surgeries: Number(r.surgeries),
+    }))
+  }
 
-  return (data as { month: string; leads: number; surgeries: number }[]).map(r => ({
-    month:     r.month,
-    leads:     Number(r.leads),
-    surgeries: Number(r.surgeries),
-  }))
+  const cutoff = new Date()
+  cutoff.setMonth(cutoff.getMonth() - 6)
+  const { data: rows, error: e2 } = await db()
+    .from('patients')
+    .select('created_at, pipeline_stage')
+    .gte('created_at', cutoff.toISOString())
+  if (e2) throw e2
+
+  const map: Record<string, { leads: number; surgeries: number }> = {}
+  for (const r of (rows ?? [])) {
+    const month = (r.created_at as string).substring(0, 7)
+    if (!map[month]) map[month] = { leads: 0, surgeries: 0 }
+    map[month].leads++
+    if (r.pipeline_stage === 'surgery_done' || r.pipeline_stage === 'post_care') {
+      map[month].surgeries++
+    }
+  }
+  return Object.entries(map)
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([month, v]) => ({ month, ...v }))
 }
 
-export async function getLeadSourceBreakdown() {
+export async function getLeadSourceBreakdown(): Promise<{ source: string; count: number }[]> {
   const { data, error } = await db().rpc('get_lead_source_breakdown')
-  if (error) throw error
+  if (!error && data) {
+    return (data as { source: string; count: number }[]).map(r => ({
+      source: r.source,
+      count:  Number(r.count),
+    }))
+  }
 
-  return (data as { source: string; count: number }[]).map(r => ({
-    source: r.source,
-    count:  Number(r.count),
-  }))
+  const { data: rows, error: e2 } = await db().from('patients').select('lead_source')
+  if (e2) throw e2
+  const map: Record<string, number> = {}
+  for (const r of (rows ?? [])) {
+    map[r.lead_source] = (map[r.lead_source] ?? 0) + 1
+  }
+  return Object.entries(map).map(([source, count]) => ({ source, count }))
 }
 
 // ── CLINICS & PROFILES ───────────────────────────────────────

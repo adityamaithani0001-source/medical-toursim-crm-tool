@@ -17,6 +17,7 @@ function AnalyticsContent() {
   const [sources, setSources] = useState<{ source: string; count: number }[]>([])
   const [loading, setLoading] = useState(true)
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null)
+  const [fetchError, setFetchError] = useState<string | null>(null)
 
   const fetchAll = useCallback(() => {
     return Promise.all([getPipelineCounts(), getMonthlyVolume(), getLeadSourceBreakdown()])
@@ -25,6 +26,10 @@ function AnalyticsContent() {
         setMonthly(m)
         setSources(src as typeof sources)
         setLastUpdated(new Date())
+        setFetchError(null)
+      })
+      .catch((err: unknown) => {
+        setFetchError(err instanceof Error ? err.message : 'Failed to load analytics data')
       })
   }, [])
 
@@ -72,11 +77,13 @@ function AnalyticsContent() {
         <div className="flex items-center justify-between mb-8">
           <h1 className="text-2xl font-bold text-gray-900">Analytics</h1>
           <div className="flex items-center gap-2">
-            <span className="inline-block w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+            <span className={`inline-block w-2 h-2 rounded-full ${fetchError ? 'bg-red-400' : 'bg-emerald-400 animate-pulse'}`} />
             <span className="text-xs text-gray-400">
-              {lastUpdated
-                ? `Updated ${lastUpdated.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}`
-                : 'Syncing…'}
+              {fetchError
+                ? `Error: ${fetchError}`
+                : lastUpdated
+                  ? `Updated ${lastUpdated.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}`
+                  : 'Loading…'}
             </span>
           </div>
         </div>
