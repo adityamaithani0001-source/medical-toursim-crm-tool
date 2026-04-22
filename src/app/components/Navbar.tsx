@@ -9,6 +9,7 @@ const NAV_LINKS = [
   { href: '/dashboard',     label: 'Pipeline' },
   { href: '/consultations', label: 'Consultations' },
   { href: '/analytics',     label: 'Analytics' },
+  { href: '/calendar',      label: 'Calendar' },
 ]
 
 export default function Navbar() {
