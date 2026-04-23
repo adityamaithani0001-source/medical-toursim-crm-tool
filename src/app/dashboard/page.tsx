@@ -22,7 +22,7 @@ function PatientCard({ patient, onStageChange }: {
   const stageInfo = PIPELINE_STAGES.find(s => s.key === patient.pipeline_stage)
 
   return (
-    <div className="group bg-white rounded-xl border border-gray-100 shadow-sm hover:shadow-md transition-all duration-200 p-4 cursor-pointer">
+    <div className="group bg-white/80 backdrop-blur-sm rounded-xl border border-gray-100 shadow-sm hover:shadow-md transition-all duration-200 p-4 cursor-pointer">
       <Link href={`/patients/${patient.id}`}>
         <div className="flex items-start justify-between mb-2">
           <div>
@@ -133,9 +133,9 @@ function DashboardContent() {
     filtered.filter(p => p.pipeline_stage === stage)
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen">
       {/* Header */}
-      <div className="bg-white border-b border-gray-100 px-6 py-4 sticky top-14 z-10">
+      <div className="bg-white/70 backdrop-blur-sm border-b border-gray-100 px-6 py-4 sticky top-14 z-10">
         <div className="flex items-center justify-between max-w-[1800px] mx-auto">
           <div className="flex items-center gap-3">
             <h1 className="text-lg font-bold text-gray-900">Patient Pipeline</h1>

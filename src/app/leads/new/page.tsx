@@ -85,14 +85,14 @@ function NewLeadContent() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-10 px-4">
+    <div className="min-h-screen py-10 px-4">
       <div className="max-w-2xl mx-auto">
         <div className="mb-8">
           <h1 className="text-2xl font-bold text-gray-900">New Lead</h1>
           <p className="text-gray-500 mt-1 text-sm">Capture inbound contact details</p>
         </div>
 
-        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-8 space-y-6">
+        <div className="bg-white/80 backdrop-blur-sm rounded-2xl border border-gray-100 shadow-sm p-8 space-y-6">
 
           {/* Section: Patient */}
           <div>

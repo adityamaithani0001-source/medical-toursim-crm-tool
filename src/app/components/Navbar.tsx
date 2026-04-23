@@ -16,7 +16,7 @@ export default function Navbar() {
   const pathname = usePathname()
 
   return (
-    <nav className="bg-white border-b border-gray-100 px-6 sticky top-0 z-30">
+    <nav className="bg-white/80 backdrop-blur-md border-b border-gray-100 px-6 sticky top-0 z-30">
       <div className="max-w-[1800px] mx-auto flex items-center gap-5 h-14">
 
         {/* Home button */}
