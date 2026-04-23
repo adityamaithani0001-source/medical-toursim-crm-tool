@@ -17,8 +17,14 @@
 }
 
 html {
-  background: linear-gradient(160deg, #fdf6ec 0%, #f5f3ff 100%) fixed;
+  background: linear-gradient(160deg, #f0f8ff 0%, #e6f3f8 50%, #edf7f4 100%) fixed;
   min-height: 100%;
+}
+
+@media (prefers-color-scheme: dark) {
+  html {
+    background: linear-gradient(160deg, #0a1628 0%, #0d2234 50%, #0a1f2e 100%) fixed;
+  }
 }
 
 body {
