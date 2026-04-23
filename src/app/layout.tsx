@@ -29,14 +29,6 @@ export default function RootLayout({
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
-        <div
-          style={{
-            position: 'fixed',
-            inset: 0,
-            zIndex: -1,
-            background: 'linear-gradient(160deg, #fdf6ec 0%, #f5f3ff 100%)',
-          }}
-        />
         <Navbar />
         {children}
       </body>
