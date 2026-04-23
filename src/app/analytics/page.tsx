@@ -101,9 +101,9 @@ function AnalyticsContent() {
             { label: 'Active pipeline', value: totalLeads - totalSurgeries, sub: 'pre-surgery' },
           ].map(k => (
             <div key={k.label} className="bg-white/80 backdrop-blur-sm rounded-2xl border border-gray-100 shadow-sm p-6">
-              <p className="text-xs text-gray-400 font-medium mb-1">{k.label}</p>
-              <p className="text-3xl font-bold text-gray-900">{k.value}</p>
-              <p className="text-xs text-gray-300 mt-1">{k.sub}</p>
+              <p className="text-xs text-black font-medium mb-1">{k.label}</p>
+              <p className="text-3xl font-bold text-black">{k.value}</p>
+              <p className="text-xs text-black mt-1">{k.sub}</p>
             </div>
           ))}
         </div>
