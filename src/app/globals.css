@@ -17,18 +17,18 @@
 }
 
 html {
-  background: linear-gradient(160deg, #eef2ff 0%, #e0e7ff 50%, #ede9fe 100%) fixed;
   min-height: 100%;
 }
 
-@media (prefers-color-scheme: dark) {
-  html {
-    background: linear-gradient(160deg, #1e1b4b 0%, #1e1a3a 50%, #1a1730 100%) fixed;
-  }
-}
-
 body {
-  background: transparent !important;
+  background: linear-gradient(160deg, #eef2ff 0%, #e0e7ff 50%, #ede9fe 100%) fixed;
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
+  min-height: 100vh;
+}
+
+@media (prefers-color-scheme: dark) {
+  body {
+    background: linear-gradient(160deg, #1e1b4b 0%, #1e1a3a 50%, #1a1730 100%) fixed;
+  }
 }

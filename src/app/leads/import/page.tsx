@@ -370,8 +370,8 @@ function ImportContent() {
               tabIndex={0}
               className={`border-2 border-dashed rounded-2xl p-16 text-center cursor-pointer transition-colors ${
                 dragging
-                  ? 'border-indigo-400 bg-indigo-50'
-                  : 'border-gray-200 bg-white hover:border-indigo-300 hover:bg-gray-50'
+                  ? 'border-indigo-400 bg-indigo-100/60'
+                  : 'border-gray-200 bg-white/60 hover:border-indigo-300 hover:bg-white/80'
               }`}
               onDrop={handleDrop}
               onDragOver={e => { e.preventDefault(); setDragging(true) }}
