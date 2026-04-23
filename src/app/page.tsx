@@ -42,7 +42,7 @@ export default function HomePage() {
   return (
     <div className="min-h-screen flex flex-col">
       {/* Hero */}
-      <div className="bg-white/60 backdrop-blur-sm border-b border-gray-100 px-6 py-12">
+      <div className="bg-white/70 backdrop-blur-sm border-b border-gray-100 px-6 py-12">
         <div className="max-w-4xl mx-auto text-center">
           <div className="inline-flex items-center justify-center w-14 h-14 bg-indigo-600 rounded-2xl mb-5">
             <span className="text-white text-xl font-bold">MT</span>

@@ -22,7 +22,7 @@ function PatientCard({ patient, onStageChange }: {
   const stageInfo = PIPELINE_STAGES.find(s => s.key === patient.pipeline_stage)
 
   return (
-    <div className="group bg-white rounded-xl border border-gray-100 shadow-sm hover:shadow-md transition-all duration-200 p-4 cursor-pointer">
+    <div className="group bg-white/80 backdrop-blur-sm rounded-xl border border-gray-100 shadow-sm hover:shadow-md transition-all duration-200 p-4 cursor-pointer">
       <Link href={`/patients/${patient.id}`}>
         <div className="flex items-start justify-between mb-2">
           <div>

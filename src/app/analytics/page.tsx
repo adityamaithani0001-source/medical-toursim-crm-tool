@@ -100,7 +100,7 @@ function AnalyticsContent() {
             { label: 'Deposit conversion', value: `${convRate}%`, sub: 'leads → deposit paid' },
             { label: 'Active pipeline', value: totalLeads - totalSurgeries, sub: 'pre-surgery' },
           ].map(k => (
-            <div key={k.label} className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
+            <div key={k.label} className="bg-white/80 backdrop-blur-sm rounded-2xl border border-gray-100 shadow-sm p-6">
               <p className="text-xs text-gray-400 font-medium mb-1">{k.label}</p>
               <p className="text-3xl font-bold text-gray-900">{k.value}</p>
               <p className="text-xs text-gray-300 mt-1">{k.sub}</p>
@@ -110,7 +110,7 @@ function AnalyticsContent() {
 
         <div className="grid grid-cols-2 gap-6 mb-6">
           {/* Stage funnel */}
-          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
+          <div className="bg-white/80 backdrop-blur-sm rounded-2xl border border-gray-100 shadow-sm p-6">
             <h2 className="font-semibold text-gray-800 mb-4 text-sm">Pipeline funnel</h2>
             <div className="space-y-2">
               {funnelData.map(({ label, count, color }) => {
@@ -134,7 +134,7 @@ function AnalyticsContent() {
           </div>
 
           {/* Lead sources */}
-          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
+          <div className="bg-white/80 backdrop-blur-sm rounded-2xl border border-gray-100 shadow-sm p-6">
             <h2 className="font-semibold text-gray-800 mb-4 text-sm">Lead sources</h2>
             <ResponsiveContainer width="100%" height={220}>
               <BarChart data={sourceData} barSize={32}>
@@ -151,7 +151,7 @@ function AnalyticsContent() {
         </div>
 
         {/* Monthly volume */}
-        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
+        <div className="bg-white/80 backdrop-blur-sm rounded-2xl border border-gray-100 shadow-sm p-6">
           <h2 className="font-semibold text-gray-800 mb-4 text-sm">Monthly volume — last 6 months</h2>
           {monthly.length === 0 ? (
             <p className="text-sm text-gray-300 py-8 text-center">No data yet</p>

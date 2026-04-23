@@ -289,7 +289,7 @@ function ImportContent() {
     const pct = progress.total > 0 ? Math.round((progress.done / progress.total) * 100) : 0
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-10 max-w-sm w-full text-center">
+        <div className="bg-white/80 backdrop-blur-sm rounded-2xl border border-gray-100 shadow-sm p-10 max-w-sm w-full text-center">
           <div className="w-12 h-12 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin mx-auto mb-6" />
           <p className="font-semibold text-gray-900 mb-1">Importing leads…</p>
           <p className="text-sm text-gray-400 mb-4">{progress.done} of {progress.total}</p>
@@ -310,7 +310,7 @@ function ImportContent() {
     const imported = progress.total - progress.failed
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-10 max-w-sm w-full text-center">
+        <div className="bg-white/80 backdrop-blur-sm rounded-2xl border border-gray-100 shadow-sm p-10 max-w-sm w-full text-center">
           <div className="w-14 h-14 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-5 text-2xl">
             ✓
           </div>
@@ -395,7 +395,7 @@ function ImportContent() {
             </div>
 
             {/* Column reference */}
-            <div className="mt-6 bg-white rounded-2xl border border-gray-100 p-6">
+            <div className="mt-6 bg-white/80 backdrop-blur-sm rounded-2xl border border-gray-100 p-6">
               <h2 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-4">
                 Expected columns
               </h2>
@@ -436,7 +436,7 @@ function ImportContent() {
             </div>
 
             {/* Preview table */}
-            <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden mb-6">
+            <div className="bg-white/80 backdrop-blur-sm rounded-2xl border border-gray-100 overflow-hidden mb-6">
               <div className="overflow-x-auto">
                 <table className="w-full text-xs">
                   <thead>

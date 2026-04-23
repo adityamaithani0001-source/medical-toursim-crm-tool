@@ -114,7 +114,7 @@ function ConsultationsContent() {
 
         {/* New consult form */}
         {showForm && (
-          <div className="bg-white border border-gray-100 rounded-2xl shadow-sm p-6 mb-6">
+          <div className="bg-white/80 backdrop-blur-sm border border-gray-100 rounded-2xl shadow-sm p-6 mb-6">
             <h2 className="font-semibold text-gray-800 mb-4">Schedule Consultation</h2>
             <div className="grid grid-cols-2 gap-4">
               <div>
@@ -254,7 +254,7 @@ function ConsultCard({ consult, clinics, onMemo, isMemo, memoText, memoClinic, o
 }) {
   const dt = new Date(consult.scheduled_at)
   return (
-    <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-5">
+    <div className="bg-white/80 backdrop-blur-sm rounded-xl border border-gray-100 shadow-sm p-5">
       <div className="flex items-center justify-between">
         <div>
           <p className="font-semibold text-gray-900">{consult.patient?.name ?? '—'}</p>
