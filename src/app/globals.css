@@ -20,12 +20,7 @@
 }
 
 body {
-  background-color: #f8faff;
-  background-image:
-    radial-gradient(ellipse at 20% 20%, rgba(99,102,241,0.30) 0%, transparent 55%),
-    radial-gradient(ellipse at 80% 80%, rgba(16,185,129,0.22) 0%, transparent 55%),
-    radial-gradient(ellipse at 55% 45%, rgba(59,130,246,0.18) 0%, transparent 60%);
-  background-attachment: fixed;
+  background: transparent !important;
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
