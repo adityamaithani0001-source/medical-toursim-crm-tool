@@ -133,9 +133,9 @@ function DashboardContent() {
     filtered.filter(p => p.pipeline_stage === stage)
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen">
       {/* Header */}
-      <div className="bg-white border-b border-gray-100 px-6 py-4 sticky top-14 z-10">
+      <div className="bg-white/70 backdrop-blur-sm border-b border-gray-100 px-6 py-4 sticky top-14 z-10">
         <div className="flex items-center justify-between max-w-[1800px] mx-auto">
           <div className="flex items-center gap-3">
             <h1 className="text-lg font-bold text-gray-900">Patient Pipeline</h1>

@@ -87,9 +87,9 @@ function PatientDetailContent() {
   const stageColor = STAGE_COLOR[stage] ?? '#6366f1'
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen">
       {/* Header */}
-      <div className="bg-white border-b border-gray-100 px-6 py-4 sticky top-14 z-10">
+      <div className="bg-white/70 backdrop-blur-sm border-b border-gray-100 px-6 py-4 sticky top-14 z-10">
         <div className="max-w-5xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-3">
             <button onClick={() => router.back()} className="text-gray-400 hover:text-gray-600 text-lg">←</button>

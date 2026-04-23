@@ -288,7 +288,7 @@ function ImportContent() {
   if (stage === 'importing') {
     const pct = progress.total > 0 ? Math.round((progress.done / progress.total) * 100) : 0
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center">
         <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-10 max-w-sm w-full text-center">
           <div className="w-12 h-12 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin mx-auto mb-6" />
           <p className="font-semibold text-gray-900 mb-1">Importing leads…</p>
@@ -309,7 +309,7 @@ function ImportContent() {
   if (stage === 'done') {
     const imported = progress.total - progress.failed
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center">
         <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-10 max-w-sm w-full text-center">
           <div className="w-14 h-14 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-5 text-2xl">
             ✓
@@ -343,7 +343,7 @@ function ImportContent() {
   // ── Render: idle + preview ─────────────────────────────────────────────────
 
   return (
-    <div className="min-h-screen bg-gray-50 py-10 px-4">
+    <div className="min-h-screen py-10 px-4">
       <div className="max-w-5xl mx-auto">
 
         {/* Page header */}

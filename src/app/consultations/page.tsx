@@ -70,7 +70,7 @@ function ConsultationsContent() {
   const reminders = consultations.filter(needsReminder)
 
   return (
-    <div className="min-h-screen bg-gray-50 px-6 py-8">
+    <div className="min-h-screen px-6 py-8">
       <div className="max-w-4xl mx-auto">
 
         {/* Reminder alerts */}
