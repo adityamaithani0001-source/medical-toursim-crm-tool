@@ -13,7 +13,7 @@ export default function ProgressStatusBar({ currentStage }: ProgressStatusBarPro
   const progressPct = Math.round(((currentIndex) / (PIPELINE_STAGES.length - 1)) * 100)
 
   return (
-    <div className="bg-white border-b border-gray-100 px-6 py-5">
+    <div className="bg-white/80 backdrop-blur-sm border-b border-gray-100 px-6 py-5">
       <div className="max-w-5xl mx-auto">
 
         {/* Label row */}
