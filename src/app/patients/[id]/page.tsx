@@ -144,6 +144,15 @@ function PatientDetailContent() {
               <Field label="Full name">
                 <Input value={val('name')} onChange={v => set('name', v)} />
               </Field>
+              <Field label="Full name as per passport">
+                <Input value={val('passport_name') ?? ''} onChange={v => set('passport_name', v)} placeholder="As printed on passport" />
+              </Field>
+              <Field label="Date of birth">
+                <Input type="date" value={val('dob') ?? ''} onChange={v => set('dob', v)} />
+              </Field>
+              <Field label="Nationality">
+                <Input value={val('nationality') ?? ''} onChange={v => set('nationality', v)} placeholder="Indonesian" />
+              </Field>
               <Field label="Country">
                 <Input value={val('country')} onChange={v => set('country', v)} />
               </Field>
@@ -169,6 +178,27 @@ function PatientDetailContent() {
                 </SelectField>
               </Field>
             </Grid2>
+          </Section>
+
+          <Section title="Contact details">
+            <Grid2>
+              <Field label="Phone / WhatsApp">
+                <Input value={val('phone') ?? ''} onChange={v => set('phone', v)} placeholder="+62 812 3456 7890" />
+              </Field>
+              <Field label="Email">
+                <Input type="email" value={val('email') ?? ''} onChange={v => set('email', v)} placeholder="patient@email.com" />
+              </Field>
+            </Grid2>
+          </Section>
+
+          <Section title="Medical history">
+            <textarea
+              className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-300 resize-none"
+              rows={3}
+              value={val('past_surgery_history') ?? ''}
+              onChange={e => set('past_surgery_history', e.target.value)}
+              placeholder="Previous procedures, relevant medical history…"
+            />
           </Section>
 
           <Section title="Logistics">

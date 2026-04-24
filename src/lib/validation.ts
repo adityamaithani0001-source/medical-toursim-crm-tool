@@ -17,8 +17,14 @@ const paymentMethods = ['card', 'bank_transfer', 'cash', 'other'] as const
 
 export const newLeadSchema = z.object({
   name:                   z.string().min(1, 'Name is required').max(200, 'Name too long'),
+  passport_name:          z.string().max(200, 'Passport name too long').nullable().optional(),
+  dob:                    isoDate.nullable().optional(),
+  nationality:            z.string().max(100, 'Nationality too long').nullable().optional(),
   country:                z.string().min(1, 'Country is required').max(100, 'Country too long'),
   language:               z.string().max(100, 'Language too long').optional(),
+  phone:                  z.string().max(50, 'Phone too long').nullable().optional(),
+  email:                  z.string().email('Must be a valid email').max(200).nullable().optional(),
+  past_surgery_history:   z.string().max(2000, 'Past surgery history too long').nullable().optional(),
   lead_source:            z.enum(leadSources),
   preferred_channel:      z.enum(commsChannels),
   surgery_type:           z.string().min(1, 'Surgery type is required').max(200, 'Surgery type too long'),
@@ -29,8 +35,14 @@ export const newLeadSchema = z.object({
 
 export const patientUpdateSchema = z.object({
   name:                   z.string().min(1).max(200).optional(),
+  passport_name:          z.string().max(200).nullable().optional(),
+  dob:                    isoDate.nullable().optional(),
+  nationality:            z.string().max(100).nullable().optional(),
   country:                z.string().min(1).max(100).optional(),
   language:               z.string().max(100).optional(),
+  phone:                  z.string().max(50).nullable().optional(),
+  email:                  z.string().email('Must be a valid email').max(200).nullable().optional(),
+  past_surgery_history:   z.string().max(2000).nullable().optional(),
   surgery_type:           z.string().min(1).max(200).optional(),
   pipeline_stage:         z.enum(pipelineStages).optional(),
   lead_source:            z.enum(leadSources).optional(),
@@ -84,8 +96,14 @@ export const consultationSchema = z.object({
 // Used by CSV import row validation
 export const csvRowSchema = z.object({
   name:                   z.string().min(1, 'Name is required').max(200, 'Name too long'),
+  passport_name:          z.string().max(200).nullable().optional(),
+  dob:                    isoDate.nullable().optional(),
+  nationality:            z.string().max(100).nullable().optional(),
   country:                z.string().min(1, 'Country is required').max(100, 'Country too long'),
   language:               z.string().max(100).optional(),
+  phone:                  z.string().max(50).nullable().optional(),
+  email:                  z.string().email().max(200).nullable().optional(),
+  past_surgery_history:   z.string().max(2000).nullable().optional(),
   surgery_type:           z.string().min(1, 'Surgery type is required').max(200, 'Surgery type too long'),
   lead_source:            z.enum(leadSources).catch('email'),
   preferred_channel:      z.enum(commsChannels).catch('email'),

@@ -188,6 +188,23 @@ export async function getLeadSourceBreakdown() {
   return Object.entries(sourceMap).map(([source, count]) => ({ source, count }))
 }
 
+export async function getNationalityBreakdown() {
+  const { data, error } = await db()
+    .from('patients')
+    .select('nationality')
+  if (error) throw error
+
+  const map: Record<string, number> = {}
+  for (const row of data as { nationality: string | null }[]) {
+    const nat = row.nationality?.trim() || 'Unknown'
+    map[nat] = (map[nat] ?? 0) + 1
+  }
+
+  return Object.entries(map)
+    .sort(([, a], [, b]) => b - a)
+    .map(([nationality, count]) => ({ nationality, count }))
+}
+
 // ── CLINICS & PROFILES ───────────────────────────────────────
 
 export async function getClinics() {

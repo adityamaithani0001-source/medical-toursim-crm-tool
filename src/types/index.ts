@@ -38,8 +38,14 @@ export interface Clinic {
 export interface Patient {
   id: string
   name: string
+  passport_name: string | null
+  dob: string | null
+  nationality: string | null
   country: string
   language: string
+  phone: string | null
+  email: string | null
+  past_surgery_history: string | null
   lead_source: LeadSource
   preferred_channel: CommsChannel
   surgery_type: string
