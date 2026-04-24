@@ -5,6 +5,11 @@ const isoDate = z
   .regex(/^\d{4}-\d{2}-\d{2}$/, 'Must be YYYY-MM-DD')
   .refine(v => !isNaN(Date.parse(v)), 'Must be a valid date')
 
+// Accepts datetime-local format (YYYY-MM-DDTHH:mm) and full ISO timestamps from Supabase
+const isoDatetime = z
+  .string()
+  .refine(v => !isNaN(Date.parse(v)), 'Must be a valid date and time')
+
 const pipelineStages = [
   'new_lead', 'qualified', 'consult_scheduled', 'consult_done',
   'quote_sent', 'deposit_paid', 'arrival_confirmed', 'surgery_done', 'post_care',
@@ -48,26 +53,27 @@ export const patientUpdateSchema = z.object({
   lead_source:            z.enum(leadSources).optional(),
   preferred_channel:      z.enum(commsChannels).optional(),
   conversion_probability: z.enum(probabilities).optional(),
-  korea_arrival_date:     isoDate.nullable().optional(),
-  surgery_date:           isoDate.nullable().optional(),
+  korea_arrival_date:     isoDatetime.nullable().optional(),
+  surgery_date:           isoDatetime.nullable().optional(),
   clinic_id:              z.string().uuid().nullable().optional(),
   deposit_amount:         z.number().positive().nullable().optional(),
   deposit_currency:       z.string().length(3, 'Currency must be a 3-letter code').optional(),
   payment_method:         z.enum(paymentMethods).nullable().optional(),
   airport_pickup:         z.boolean().optional(),
   hotel_name:             z.string().max(200).nullable().optional(),
-  hotel_checkin:          isoDate.nullable().optional(),
-  hotel_checkout:         isoDate.nullable().optional(),
+  hotel_checkin:          isoDatetime.nullable().optional(),
+  hotel_checkout:         isoDatetime.nullable().optional(),
   car_arranged:           z.boolean().optional(),
   quote_sent_via:         z.enum(commsChannels).nullable().optional(),
   quote_sent_at:          z.string().nullable().optional(),
   happy_call_date:        isoDate.nullable().optional(),
+  happy_call_type:        z.string().max(50).nullable().optional(),
   happy_call_outcome:     z.string().max(1000).nullable().optional(),
   notes:                  z.string().max(2000).nullable().optional(),
 }).superRefine((data, ctx) => {
   if (
     data.hotel_checkin && data.hotel_checkout &&
-    data.hotel_checkin >= data.hotel_checkout
+    new Date(data.hotel_checkin) >= new Date(data.hotel_checkout)
   ) {
     ctx.addIssue({
       code: z.ZodIssueCode.custom,
@@ -77,7 +83,7 @@ export const patientUpdateSchema = z.object({
   }
   if (
     data.korea_arrival_date && data.surgery_date &&
-    data.surgery_date < data.korea_arrival_date
+    new Date(data.surgery_date) < new Date(data.korea_arrival_date)
   ) {
     ctx.addIssue({
       code: z.ZodIssueCode.custom,

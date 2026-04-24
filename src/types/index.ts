@@ -67,6 +67,7 @@ export interface Patient {
   quote_sent_via: CommsChannel | null
   quote_sent_at: string | null
   happy_call_date: string | null
+  happy_call_type: string | null
   happy_call_outcome: string | null
   notes: string | null
   created_at: string
