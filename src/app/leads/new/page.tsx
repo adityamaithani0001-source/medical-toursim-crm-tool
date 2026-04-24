@@ -12,6 +12,26 @@ const CHANNELS: CommsChannel[] = ['whatsapp', 'kakaotalk', 'telegram', 'instagra
 const SOURCES: LeadSource[]    = ['whatsapp', 'email', 'booking_form', 'ad']
 const SURGERY_TYPES = ['Eyes', 'Nose', 'Face', 'Breast', 'Body', 'Other']
 
+const NATIONALITIES = [
+  'Afghan', 'Albanian', 'Algerian', 'American', 'Andorran', 'Angolan', 'Argentine', 'Armenian',
+  'Australian', 'Austrian', 'Azerbaijani', 'Bahraini', 'Bangladeshi', 'Belarusian', 'Belgian',
+  'Bolivian', 'Bosnian', 'Brazilian', 'British', 'Bulgarian', 'Cambodian', 'Cameroonian',
+  'Canadian', 'Chilean', 'Chinese', 'Colombian', 'Congolese', 'Croatian', 'Cuban', 'Czech',
+  'Danish', 'Dominican', 'Dutch', 'Ecuadorian', 'Egyptian', 'Emirati', 'Estonian', 'Ethiopian',
+  'Filipino', 'Finnish', 'French', 'Georgian', 'German', 'Ghanaian', 'Greek', 'Guatemalan',
+  'Honduran', 'Hungarian', 'Indian', 'Indonesian', 'Iranian', 'Iraqi', 'Irish', 'Israeli',
+  'Italian', 'Ivorian', 'Jamaican', 'Japanese', 'Jordanian', 'Kazakhstani', 'Kenyan', 'Kuwaiti',
+  'Kyrgyz', 'Lao', 'Latvian', 'Lebanese', 'Libyan', 'Lithuanian', 'Luxembourgish', 'Macedonian',
+  'Malaysian', 'Maldivian', 'Mexican', 'Moldovan', 'Mongolian', 'Moroccan', 'Mozambican',
+  'Burmese', 'Nepali', 'New Zealander', 'Nigerian', 'Norwegian', 'Omani', 'Pakistani',
+  'Palestinian', 'Panamanian', 'Paraguayan', 'Peruvian', 'Polish', 'Portuguese', 'Qatari',
+  'Romanian', 'Russian', 'Saudi', 'Senegalese', 'Serbian', 'Singaporean', 'Slovak', 'Slovenian',
+  'Somali', 'South African', 'South Korean', 'Spanish', 'Sri Lankan', 'Sudanese', 'Swedish',
+  'Swiss', 'Syrian', 'Taiwanese', 'Tajik', 'Tanzanian', 'Thai', 'Tunisian', 'Turkish',
+  'Turkmen', 'Ugandan', 'Ukrainian', 'Uruguayan', 'Uzbek', 'Venezuelan', 'Vietnamese',
+  'Yemeni', 'Zambian', 'Zimbabwean', 'Other',
+].sort((a, b) => a === 'Other' ? 1 : b === 'Other' ? -1 : a.localeCompare(b))
+
 function NewLeadContent() {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
@@ -130,7 +150,10 @@ function NewLeadContent() {
               </div>
               <div>
                 <Label>Nationality</Label>
-                <Input value={form.nationality} onChange={v => set('nationality', v)} placeholder="Indonesian" error={fieldErrors.nationality} />
+                <Select value={form.nationality} onChange={v => set('nationality', v)} error={fieldErrors.nationality}>
+                  <option value="">Select nationality…</option>
+                  {NATIONALITIES.map(n => <option key={n} value={n}>{n}</option>)}
+                </Select>
               </div>
               <div>
                 <Label>Country *</Label>
