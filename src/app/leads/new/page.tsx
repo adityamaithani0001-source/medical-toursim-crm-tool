@@ -236,9 +236,9 @@ function NewLeadContent() {
           <div className="pt-4 border-t border-gray-50">
             <h2 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-4">Travel</h2>
             <div>
-              <Label>Planned arrival in Korea</Label>
+              <Label>Planned arrival in Korea (date & time)</Label>
               <Input
-                type="date"
+                type="datetime-local"
                 value={form.korea_arrival_date}
                 onChange={v => set('korea_arrival_date', v)}
                 error={fieldErrors.korea_arrival_date}

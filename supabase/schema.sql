@@ -112,8 +112,8 @@ CREATE TABLE public.patients (
   pipeline_stage        pipeline_stage NOT NULL DEFAULT 'new_lead',
 
   -- Logistics (filled in progressively)
-  korea_arrival_date    DATE,
-  surgery_date          DATE,
+  korea_arrival_date    TIMESTAMPTZ,
+  surgery_date          TIMESTAMPTZ,
   clinic_id             UUID REFERENCES public.clinics(id),
 
   -- Deposit
@@ -124,8 +124,8 @@ CREATE TABLE public.patients (
   -- Logistics flags
   airport_pickup        BOOLEAN DEFAULT FALSE,
   hotel_name            TEXT,
-  hotel_checkin         DATE,
-  hotel_checkout        DATE,
+  hotel_checkin         TIMESTAMPTZ,
+  hotel_checkout        TIMESTAMPTZ,
   car_arranged          BOOLEAN DEFAULT FALSE,
 
   -- Quote
@@ -134,6 +134,7 @@ CREATE TABLE public.patients (
 
   -- Post-care
   happy_call_date       DATE,
+  happy_call_type       TEXT,
   happy_call_outcome    TEXT,
 
   -- Meta
@@ -317,6 +318,14 @@ ALTER TABLE public.patients
   ADD COLUMN IF NOT EXISTS nationality          TEXT,
   ADD COLUMN IF NOT EXISTS phone                TEXT,
   ADD COLUMN IF NOT EXISTS email                TEXT,
-  ADD COLUMN IF NOT EXISTS past_surgery_history TEXT;
+  ADD COLUMN IF NOT EXISTS past_surgery_history TEXT,
+  ADD COLUMN IF NOT EXISTS happy_call_type      TEXT;
+
+-- Change logistics date columns to TIMESTAMPTZ (includes time of day)
+ALTER TABLE public.patients
+  ALTER COLUMN korea_arrival_date TYPE TIMESTAMPTZ USING korea_arrival_date::TIMESTAMPTZ,
+  ALTER COLUMN surgery_date       TYPE TIMESTAMPTZ USING surgery_date::TIMESTAMPTZ,
+  ALTER COLUMN hotel_checkin      TYPE TIMESTAMPTZ USING hotel_checkin::TIMESTAMPTZ,
+  ALTER COLUMN hotel_checkout     TYPE TIMESTAMPTZ USING hotel_checkout::TIMESTAMPTZ;
 
 CREATE INDEX IF NOT EXISTS idx_patients_nationality ON public.patients(nationality);
