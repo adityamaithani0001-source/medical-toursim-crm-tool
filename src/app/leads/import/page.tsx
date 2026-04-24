@@ -273,6 +273,7 @@ function ImportContent() {
         quote_sent_via:         null,
         quote_sent_at:          null,
         happy_call_date:        null,
+        happy_call_type:        null,
         happy_call_outcome:     null,
       }))
 

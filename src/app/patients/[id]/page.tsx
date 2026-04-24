@@ -10,6 +10,26 @@ import { PIPELINE_STAGES, CHANNEL_LABELS } from '@/types'
 
 const SURGERY_TYPES = ['Eyes', 'Nose', 'Face', 'Breast', 'Body', 'Other']
 
+const NATIONALITIES = [
+  'Afghan', 'Albanian', 'Algerian', 'American', 'Andorran', 'Angolan', 'Argentine', 'Armenian',
+  'Australian', 'Austrian', 'Azerbaijani', 'Bahraini', 'Bangladeshi', 'Belarusian', 'Belgian',
+  'Bolivian', 'Bosnian', 'Brazilian', 'British', 'Bulgarian', 'Cambodian', 'Cameroonian',
+  'Canadian', 'Chilean', 'Chinese', 'Colombian', 'Congolese', 'Croatian', 'Cuban', 'Czech',
+  'Danish', 'Dominican', 'Dutch', 'Ecuadorian', 'Egyptian', 'Emirati', 'Estonian', 'Ethiopian',
+  'Filipino', 'Finnish', 'French', 'Georgian', 'German', 'Ghanaian', 'Greek', 'Guatemalan',
+  'Honduran', 'Hungarian', 'Indian', 'Indonesian', 'Iranian', 'Iraqi', 'Irish', 'Israeli',
+  'Italian', 'Ivorian', 'Jamaican', 'Japanese', 'Jordanian', 'Kazakhstani', 'Kenyan', 'Kuwaiti',
+  'Kyrgyz', 'Lao', 'Latvian', 'Lebanese', 'Libyan', 'Lithuanian', 'Luxembourgish', 'Macedonian',
+  'Malaysian', 'Maldivian', 'Mexican', 'Moldovan', 'Mongolian', 'Moroccan', 'Mozambican',
+  'Burmese', 'Nepali', 'New Zealander', 'Nigerian', 'Norwegian', 'Omani', 'Pakistani',
+  'Palestinian', 'Panamanian', 'Paraguayan', 'Peruvian', 'Polish', 'Portuguese', 'Qatari',
+  'Romanian', 'Russian', 'Saudi', 'Senegalese', 'Serbian', 'Singaporean', 'Slovak', 'Slovenian',
+  'Somali', 'South African', 'South Korean', 'Spanish', 'Sri Lankan', 'Sudanese', 'Swedish',
+  'Swiss', 'Syrian', 'Taiwanese', 'Tajik', 'Tanzanian', 'Thai', 'Tunisian', 'Turkish',
+  'Turkmen', 'Ugandan', 'Ukrainian', 'Uruguayan', 'Uzbek', 'Venezuelan', 'Vietnamese',
+  'Yemeni', 'Zambian', 'Zimbabwean', 'Other',
+].sort((a, b) => a === 'Other' ? 1 : b === 'Other' ? -1 : a.localeCompare(b))
+
 function formatSurgeryTypes(value: string | null | undefined): string {
   if (!value) return ''
   return value.split(',').map(s => {
@@ -24,6 +44,9 @@ import { ErrorBoundary } from '@/app/components/ErrorBoundary'
 const STAGE_COLOR: Record<string, string> = Object.fromEntries(
   PIPELINE_STAGES.map(s => [s.key, s.color])
 )
+
+// Converts any ISO string to the YYYY-MM-DDTHH:mm format required by datetime-local inputs
+const toDatetimeLocal = (v: string | null | undefined) => v ? v.slice(0, 16) : ''
 
 function PatientDetailContent() {
   const { id } = useParams<{ id: string }>()
@@ -151,7 +174,10 @@ function PatientDetailContent() {
                 <Input type="date" value={val('dob') ?? ''} onChange={v => set('dob', v)} />
               </Field>
               <Field label="Nationality">
-                <Input value={val('nationality') ?? ''} onChange={v => set('nationality', v)} placeholder="Indonesian" />
+                <SelectField value={val('nationality') ?? ''} onChange={v => set('nationality', v)}>
+                  <option value="">Select nationality…</option>
+                  {NATIONALITIES.map(n => <option key={n} value={n}>{n}</option>)}
+                </SelectField>
               </Field>
               <Field label="Country">
                 <Input value={val('country')} onChange={v => set('country', v)} />
@@ -203,11 +229,11 @@ function PatientDetailContent() {
 
           <Section title="Logistics">
             <Grid2>
-              <Field label="Korea arrival">
-                <Input type="date" value={val('korea_arrival_date') ?? ''} onChange={v => set('korea_arrival_date', v)} />
+              <Field label="Korea arrival (date & time)">
+                <Input type="datetime-local" value={toDatetimeLocal(val('korea_arrival_date'))} onChange={v => set('korea_arrival_date', v)} />
               </Field>
-              <Field label="Surgery date">
-                <Input type="date" value={val('surgery_date') ?? ''} onChange={v => set('surgery_date', v)} />
+              <Field label="Surgery date & time">
+                <Input type="datetime-local" value={toDatetimeLocal(val('surgery_date'))} onChange={v => set('surgery_date', v)} />
               </Field>
               <Field label="Clinic">
                 <SelectField value={val('clinic_id') ?? ''} onChange={v => set('clinic_id', v)}>
@@ -218,11 +244,11 @@ function PatientDetailContent() {
               <Field label="Hotel">
                 <Input value={val('hotel_name') ?? ''} onChange={v => set('hotel_name', v)} placeholder="Hotel name" />
               </Field>
-              <Field label="Check-in">
-                <Input type="date" value={val('hotel_checkin') ?? ''} onChange={v => set('hotel_checkin', v)} />
+              <Field label="Check-in (date & time)">
+                <Input type="datetime-local" value={toDatetimeLocal(val('hotel_checkin'))} onChange={v => set('hotel_checkin', v)} />
               </Field>
-              <Field label="Check-out">
-                <Input type="date" value={val('hotel_checkout') ?? ''} onChange={v => set('hotel_checkout', v)} />
+              <Field label="Check-out (date & time)">
+                <Input type="datetime-local" value={toDatetimeLocal(val('hotel_checkout'))} onChange={v => set('hotel_checkout', v)} />
               </Field>
             </Grid2>
             <div className="mt-4 flex gap-6">
@@ -275,7 +301,18 @@ function PatientDetailContent() {
               <Field label="Happy call date">
                 <Input type="date" value={val('happy_call_date') ?? ''} onChange={v => set('happy_call_date', v)} />
               </Field>
-              <Field label="Outcome">
+              <Field label="Follow-up type">
+                <SelectField value={val('happy_call_type') ?? ''} onChange={v => set('happy_call_type', v)}>
+                  <option value="">Select type…</option>
+                  <option value="phone_call">Phone Call</option>
+                  <option value="whatsapp">WhatsApp</option>
+                  <option value="email">Email</option>
+                  <option value="video_call">Video Call</option>
+                  <option value="in_person">In Person</option>
+                  <option value="other">Other</option>
+                </SelectField>
+              </Field>
+              <Field label="Outcome / notes" >
                 <Input value={val('happy_call_outcome') ?? ''} onChange={v => set('happy_call_outcome', v)} placeholder="Patient satisfied, healing well…" />
               </Field>
             </Grid2>

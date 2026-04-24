@@ -205,6 +205,17 @@ export async function getNationalityBreakdown() {
     .map(([nationality, count]) => ({ nationality, count }))
 }
 
+export async function searchPatients(query: string, limit = 8) {
+  const { data, error } = await db()
+    .from('patients')
+    .select('id, name, country, surgery_type, pipeline_stage')
+    .ilike('name', `%${query}%`)
+    .order('name', { ascending: true })
+    .limit(limit)
+  if (error) throw error
+  return data as { id: string; name: string; country: string; surgery_type: string; pipeline_stage: string }[]
+}
+
 // ── CLINICS & PROFILES ───────────────────────────────────────
 
 export async function getClinics() {
