@@ -243,8 +243,14 @@ function ImportContent() {
     for (let i = 0; i < validRows.length; i += BATCH) {
       const batch = validRows.slice(i, i + BATCH).map(r => ({
         name:                   r.name,
+        passport_name:          null,
+        dob:                    null,
+        nationality:            null,
         country:                r.country,
         language:               r.language,
+        phone:                  null,
+        email:                  null,
+        past_surgery_history:   null,
         surgery_type:           r.surgery_type,
         lead_source:            r.lead_source,
         preferred_channel:      r.preferred_channel,
