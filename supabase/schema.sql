@@ -89,8 +89,14 @@ CREATE TABLE public.patients (
 
   -- Identity
   name                  TEXT NOT NULL,
+  passport_name         TEXT,
+  dob                   DATE,
+  nationality           TEXT,
   country               TEXT NOT NULL,
   language              TEXT NOT NULL,
+  phone                 TEXT,
+  email                 TEXT,
+  past_surgery_history  TEXT,
 
   -- Lead info
   lead_source           lead_source NOT NULL,
@@ -299,3 +305,18 @@ INSERT INTO public.clinics (name, surgery_types, is_partner) VALUES
   ('BK Plastic Surgery', ARRAY['eyes', 'nose', 'face'], TRUE),
   ('JW Plastic Surgery', ARRAY['eyes', 'nose', 'breast', 'body'], TRUE),
   ('THE PLUS Plastic Surgery', ARRAY['eyes', 'nose', 'face'], TRUE);
+
+-- ============================================================
+-- MIGRATION: run these ALTER statements on an existing database
+-- (skip if running schema.sql fresh on a new project)
+-- ============================================================
+
+ALTER TABLE public.patients
+  ADD COLUMN IF NOT EXISTS passport_name        TEXT,
+  ADD COLUMN IF NOT EXISTS dob                  DATE,
+  ADD COLUMN IF NOT EXISTS nationality          TEXT,
+  ADD COLUMN IF NOT EXISTS phone                TEXT,
+  ADD COLUMN IF NOT EXISTS email                TEXT,
+  ADD COLUMN IF NOT EXISTS past_surgery_history TEXT;
+
+CREATE INDEX IF NOT EXISTS idx_patients_nationality ON public.patients(nationality);

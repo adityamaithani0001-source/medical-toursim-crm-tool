@@ -20,8 +20,14 @@ function NewLeadContent() {
 
   const [form, setForm] = useState({
     name:                   '',
+    passport_name:          '',
+    dob:                    '',
+    nationality:            '',
     country:                '',
     language:               '',
+    phone:                  '',
+    email:                  '',
+    past_surgery_history:   '',
     lead_source:            'whatsapp' as LeadSource,
     preferred_channel:      'whatsapp' as CommsChannel,
     surgery_type:           '',
@@ -40,7 +46,13 @@ function NewLeadContent() {
     setFieldErrors({})
     const result = newLeadSchema.safeParse({
       ...form,
-      korea_arrival_date: form.korea_arrival_date || null,
+      passport_name:        form.passport_name || null,
+      dob:                  form.dob || null,
+      nationality:          form.nationality || null,
+      phone:                form.phone || null,
+      email:                form.email || null,
+      past_surgery_history: form.past_surgery_history || null,
+      korea_arrival_date:   form.korea_arrival_date || null,
     })
     if (!result.success) {
       const errs: Record<string, string> = {}
@@ -56,25 +68,31 @@ function NewLeadContent() {
     try {
       const patient = await createPatient({
         ...form,
-        language: form.language || form.country,
-        pipeline_stage: 'new_lead',
-        deposit_currency: 'USD',
-        airport_pickup: false,
-        car_arranged: false,
-        assigned_rep: null,
+        passport_name:        form.passport_name || null,
+        dob:                  form.dob || null,
+        nationality:          form.nationality || null,
+        phone:                form.phone || null,
+        email:                form.email || null,
+        past_surgery_history: form.past_surgery_history || null,
+        language:             form.language || form.country,
+        pipeline_stage:       'new_lead',
+        deposit_currency:     'USD',
+        airport_pickup:       false,
+        car_arranged:         false,
+        assigned_rep:         null,
         assigned_coordinator: null,
-        clinic_id: null,
-        deposit_amount: null,
-        payment_method: null,
-        hotel_name: null,
-        hotel_checkin: null,
-        hotel_checkout: null,
-        quote_sent_via: null,
-        quote_sent_at: null,
-        happy_call_date: null,
-        happy_call_outcome: null,
-        korea_arrival_date: form.korea_arrival_date || null,
-        surgery_date: null,
+        clinic_id:            null,
+        deposit_amount:       null,
+        payment_method:       null,
+        hotel_name:           null,
+        hotel_checkin:        null,
+        hotel_checkout:       null,
+        quote_sent_via:       null,
+        quote_sent_at:        null,
+        happy_call_date:      null,
+        happy_call_outcome:   null,
+        korea_arrival_date:   form.korea_arrival_date || null,
+        surgery_date:         null,
       })
       router.push(`/patients/${patient.id}`)
     } catch (e: unknown) {
@@ -102,6 +120,18 @@ function NewLeadContent() {
                 <Label>Full name *</Label>
                 <Input value={form.name} onChange={v => set('name', v)} placeholder="Kim Soo-jin" error={fieldErrors.name} />
               </div>
+              <div className="col-span-2">
+                <Label>Full name as per passport</Label>
+                <Input value={form.passport_name} onChange={v => set('passport_name', v)} placeholder="As printed on passport" error={fieldErrors.passport_name} />
+              </div>
+              <div>
+                <Label>Date of birth</Label>
+                <Input type="date" value={form.dob} onChange={v => set('dob', v)} error={fieldErrors.dob} />
+              </div>
+              <div>
+                <Label>Nationality</Label>
+                <Input value={form.nationality} onChange={v => set('nationality', v)} placeholder="Indonesian" error={fieldErrors.nationality} />
+              </div>
               <div>
                 <Label>Country *</Label>
                 <Input value={form.country} onChange={v => set('country', v)} placeholder="Indonesia" error={fieldErrors.country} />
@@ -110,6 +140,37 @@ function NewLeadContent() {
                 <Label>Language</Label>
                 <Input value={form.language} onChange={v => set('language', v)} placeholder="Bahasa Indonesia" error={fieldErrors.language} />
               </div>
+            </div>
+          </div>
+
+          {/* Section: Contact */}
+          <div className="pt-4 border-t border-gray-50">
+            <h2 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-4">Contact details</h2>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label>Phone / WhatsApp</Label>
+                <Input value={form.phone} onChange={v => set('phone', v)} placeholder="+62 812 3456 7890" error={fieldErrors.phone} />
+              </div>
+              <div>
+                <Label>Email</Label>
+                <Input type="email" value={form.email} onChange={v => set('email', v)} placeholder="patient@email.com" error={fieldErrors.email} />
+              </div>
+            </div>
+          </div>
+
+          {/* Section: Medical history */}
+          <div className="pt-4 border-t border-gray-50">
+            <h2 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-4">Medical history</h2>
+            <div>
+              <Label>Past surgery history</Label>
+              <textarea
+                className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-300 resize-none"
+                rows={3}
+                placeholder="Previous procedures, relevant medical history…"
+                value={form.past_surgery_history}
+                onChange={e => set('past_surgery_history', e.target.value)}
+              />
+              {fieldErrors.past_surgery_history && <p className="mt-1 text-xs text-red-500">{fieldErrors.past_surgery_history}</p>}
             </div>
           </div>
 

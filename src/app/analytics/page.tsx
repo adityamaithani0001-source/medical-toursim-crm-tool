@@ -2,7 +2,7 @@
 // src/app/analytics/page.tsx
 
 import { useEffect, useState, useCallback } from 'react'
-import { getPipelineCounts, getMonthlyVolume, getLeadSourceBreakdown } from '@/lib/db'
+import { getPipelineCounts, getMonthlyVolume, getLeadSourceBreakdown, getNationalityBreakdown } from '@/lib/db'
 import { getSupabaseClient } from '@/lib/supabase'
 import { PIPELINE_STAGES, SOURCE_LABELS } from '@/types'
 import { ErrorBoundary } from '@/app/components/ErrorBoundary'
@@ -15,16 +15,18 @@ function AnalyticsContent() {
   const [stageCounts, setStageCounts] = useState<Record<string, number>>({})
   const [monthly, setMonthly] = useState<{ month: string; leads: number; surgeries: number }[]>([])
   const [sources, setSources] = useState<{ source: string; count: number }[]>([])
+  const [nationalities, setNationalities] = useState<{ nationality: string; count: number }[]>([])
   const [loading, setLoading] = useState(true)
   const [fetchError, setFetchError] = useState<string | null>(null)
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null)
 
   const fetchAll = useCallback(() => {
-    return Promise.all([getPipelineCounts(), getMonthlyVolume(), getLeadSourceBreakdown()])
-      .then(([s, m, src]) => {
+    return Promise.all([getPipelineCounts(), getMonthlyVolume(), getLeadSourceBreakdown(), getNationalityBreakdown()])
+      .then(([s, m, src, nat]) => {
         setStageCounts(s)
         setMonthly(m)
         setSources(src as typeof sources)
+        setNationalities(nat as typeof nationalities)
         setLastUpdated(new Date())
         setFetchError(null)
       })
@@ -168,6 +170,31 @@ function AnalyticsContent() {
                 <Line type="monotone" dataKey="leads" stroke="#6366f1" strokeWidth={2} dot={{ r: 4 }} name="Leads" />
                 <Line type="monotone" dataKey="surgeries" stroke="#10b981" strokeWidth={2} dot={{ r: 4 }} name="Surgeries" />
               </LineChart>
+            </ResponsiveContainer>
+          )}
+        </div>
+
+        {/* Nationality breakdown */}
+        <div className="bg-white/80 backdrop-blur-sm rounded-2xl border border-gray-100 shadow-sm p-6">
+          <h2 className="font-semibold text-gray-800 mb-4 text-sm">Leads by nationality</h2>
+          {nationalities.length === 0 ? (
+            <p className="text-sm text-gray-300 py-8 text-center">No nationality data yet — fill in patient nationality fields to see this chart</p>
+          ) : (
+            <ResponsiveContainer width="100%" height={Math.max(240, nationalities.length * 36)}>
+              <BarChart
+                data={nationalities}
+                layout="vertical"
+                margin={{ top: 4, right: 24, left: 8, bottom: 0 }}
+                barSize={20}
+              >
+                <XAxis type="number" allowDecimals={false} tick={{ fontSize: 11 }} axisLine={false} tickLine={false} />
+                <YAxis type="category" dataKey="nationality" width={110} tick={{ fontSize: 11 }} axisLine={false} tickLine={false} />
+                <Tooltip
+                  contentStyle={{ borderRadius: 12, border: 'none', boxShadow: '0 4px 20px rgba(0,0,0,0.08)', fontSize: 12 }}
+                  cursor={{ fill: '#f3f4f6' }}
+                />
+                <Bar dataKey="count" name="Patients" fill="#8b5cf6" radius={[0, 6, 6, 0]} />
+              </BarChart>
             </ResponsiveContainer>
           )}
         </div>
