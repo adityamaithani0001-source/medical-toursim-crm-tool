@@ -44,7 +44,6 @@ function NewLeadContent() {
     dob:                    '',
     nationality:            '',
     country:                '',
-    language:               '',
     phone:                  '',
     email:                  '',
     past_surgery_history:   '',
@@ -94,7 +93,6 @@ function NewLeadContent() {
         phone:                form.phone || null,
         email:                form.email || null,
         past_surgery_history: form.past_surgery_history || null,
-        language:             form.language || form.country,
         pipeline_stage:       'new_lead',
         deposit_currency:     'USD',
         airport_pickup:       false,
@@ -156,13 +154,9 @@ function NewLeadContent() {
                   {NATIONALITIES.map(n => <option key={n} value={n}>{n}</option>)}
                 </Select>
               </div>
-              <div>
+              <div className="col-span-2">
                 <Label>Country *</Label>
                 <Input value={form.country} onChange={v => set('country', v)} placeholder="Indonesia" error={fieldErrors.country} />
-              </div>
-              <div>
-                <Label>Language</Label>
-                <Input value={form.language} onChange={v => set('language', v)} placeholder="Bahasa Indonesia" error={fieldErrors.language} />
               </div>
             </div>
           </div>

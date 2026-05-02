@@ -182,9 +182,6 @@ function PatientDetailContent() {
               <Field label="Country">
                 <Input value={val('country')} onChange={v => set('country', v)} />
               </Field>
-              <Field label="Language">
-                <Input value={val('language')} onChange={v => set('language', v)} />
-              </Field>
               <Field label="Surgery type">
                 <SurgeryMultiSelect
                   value={val('surgery_type') ?? ''}

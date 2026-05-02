@@ -19,17 +19,16 @@ const VALID_CHANNELS: CommsChannel[]         = ['whatsapp', 'kakaotalk', 'telegr
 const VALID_PROBS:    ConversionProbability[] = ['low', 'medium', 'high']
 
 const TEMPLATE_CSV = [
-  'name,country,language,surgery_type,lead_source,preferred_channel,conversion_probability,korea_arrival_date,notes',
-  'Kim Soo-jin,South Korea,Korean,nose,whatsapp,kakaotalk,high,2025-08-15,Interested in rhinoplasty',
-  'Siti Rahma,Indonesia,Bahasa Indonesia,eyes,booking_form,whatsapp,medium,,LASIK enquiry from website',
-  'Maria Santos,Philippines,Filipino,face,ad,instagram,low,,Saw our Instagram ad',
+  'name,country,surgery_type,lead_source,preferred_channel,conversion_probability,korea_arrival_date,notes',
+  'Kim Soo-jin,South Korea,nose,whatsapp,kakaotalk,high,2025-08-15,Interested in rhinoplasty',
+  'Siti Rahma,Indonesia,eyes,booking_form,whatsapp,medium,,LASIK enquiry from website',
+  'Maria Santos,Philippines,face,ad,instagram,low,,Saw our Instagram ad',
 ].join('\n')
 
 const COLUMNS = [
   { col: 'name',                   required: true },
   { col: 'country',                required: true },
   { col: 'surgery_type',           required: true },
-  { col: 'language',               required: false },
   { col: 'lead_source',            required: false },
   { col: 'preferred_channel',      required: false },
   { col: 'conversion_probability', required: false },
@@ -91,7 +90,6 @@ interface ParsedRow {
   index:                number
   name:                 string
   country:              string
-  language:             string
   surgery_type:         string
   lead_source:          LeadSource
   preferred_channel:    CommsChannel
@@ -107,7 +105,6 @@ function mapRow(raw: Record<string, string>, index: number): ParsedRow {
   const input = {
     name:                   pick(raw, 'name', 'full_name', 'patient_name'),
     country:                pick(raw, 'country'),
-    language:               pick(raw, 'language') || undefined,
     surgery_type:           pick(raw, 'surgery_type', 'surgery'),
     lead_source:            pick(raw, 'lead_source', 'source') || undefined,
     preferred_channel:      pick(raw, 'preferred_channel', 'channel') || undefined,
@@ -124,7 +121,6 @@ function mapRow(raw: Record<string, string>, index: number): ParsedRow {
   const parsed = result.success ? result.data : {
     name:                   input.name,
     country:                input.country,
-    language:               input.language,
     surgery_type:           input.surgery_type,
     lead_source:            (VALID_SOURCES.includes(input.lead_source as LeadSource) ? input.lead_source : 'email') as LeadSource,
     preferred_channel:      (VALID_CHANNELS.includes(input.preferred_channel as CommsChannel) ? input.preferred_channel : 'email') as CommsChannel,
@@ -137,7 +133,6 @@ function mapRow(raw: Record<string, string>, index: number): ParsedRow {
     index,
     name:                   parsed.name ?? '',
     country:                parsed.country ?? '',
-    language:               parsed.language ?? parsed.country ?? '',
     surgery_type:           parsed.surgery_type ?? '',
     lead_source:            parsed.lead_source ?? 'email',
     preferred_channel:      parsed.preferred_channel ?? 'email',
@@ -247,7 +242,6 @@ function ImportContent() {
         dob:                    null,
         nationality:            null,
         country:                r.country,
-        language:               r.language,
         phone:                  null,
         email:                  null,
         past_surgery_history:   null,

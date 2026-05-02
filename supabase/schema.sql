@@ -329,3 +329,7 @@ ALTER TABLE public.patients
   ALTER COLUMN hotel_checkout     TYPE TIMESTAMPTZ USING hotel_checkout::TIMESTAMPTZ;
 
 CREATE INDEX IF NOT EXISTS idx_patients_nationality ON public.patients(nationality);
+
+-- Remove language requirement (field no longer collected in UI)
+ALTER TABLE public.patients ALTER COLUMN language DROP NOT NULL;
+ALTER TABLE public.patients ALTER COLUMN language SET DEFAULT '';
