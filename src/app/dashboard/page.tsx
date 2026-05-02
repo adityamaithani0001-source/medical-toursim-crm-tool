@@ -102,6 +102,7 @@ function DashboardContent() {
   const [patients, setPatients] = useState<Patient[]>([])
   const [loading, setLoading] = useState(true)
   const [filterStage, setFilterStage] = useState<PipelineStage | 'all'>('all')
+  const [timeFilter, setTimeFilter] = useState<'all' | 'week' | 'month' | 'year'>('all')
   const [search, setSearch] = useState('')
 
   const load = useCallback(async () => {
@@ -121,12 +122,33 @@ function DashboardContent() {
     await updateStage(id, stage)
   }
 
+  const inTimeWindow = (p: Patient) => {
+    if (timeFilter === 'all') return true
+    const ref = p.surgery_date ?? p.korea_arrival_date
+    if (!ref) return false
+    const d = new Date(ref)
+    const now = new Date()
+    if (timeFilter === 'year') return d.getFullYear() === now.getFullYear()
+    if (timeFilter === 'month') return d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth()
+    if (timeFilter === 'week') {
+      const monday = new Date(now)
+      monday.setDate(now.getDate() - ((now.getDay() + 6) % 7))
+      monday.setHours(0, 0, 0, 0)
+      const sunday = new Date(monday)
+      sunday.setDate(monday.getDate() + 6)
+      sunday.setHours(23, 59, 59, 999)
+      return d >= monday && d <= sunday
+    }
+    return true
+  }
+
   const filtered = patients.filter(p => {
     const matchStage = filterStage === 'all' || p.pipeline_stage === filterStage
+    const matchTime  = inTimeWindow(p)
     const matchSearch = !search ||
       p.name.toLowerCase().includes(search.toLowerCase()) ||
       p.country.toLowerCase().includes(search.toLowerCase())
-    return matchStage && matchSearch
+    return matchStage && matchTime && matchSearch
   })
 
   const byStage = (stage: PipelineStage) =>
@@ -144,6 +166,22 @@ function DashboardContent() {
             )}
           </div>
           <div className="flex items-center gap-3">
+            {/* Time filter toggle */}
+            <div className="flex items-center bg-gray-100 rounded-lg p-0.5">
+              {(['all', 'week', 'month', 'year'] as const).map(t => (
+                <button
+                  key={t}
+                  onClick={() => setTimeFilter(t)}
+                  className={`px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${
+                    timeFilter === t
+                      ? 'bg-white text-indigo-700 shadow-sm'
+                      : 'text-gray-500 hover:text-gray-700'
+                  }`}
+                >
+                  {t.charAt(0).toUpperCase() + t.slice(1)}
+                </button>
+              ))}
+            </div>
             <input
               type="text"
               placeholder="Search patients..."

@@ -13,7 +13,7 @@ const NAV_LINKS = [
   { href: '/calendar',      label: 'Calendar' },
 ]
 
-type SearchResult = { id: string; name: string; country: string; surgery_type: string; pipeline_stage: string }
+type SearchResult = { id: string; name: string; nationality: string | null; country: string; surgery_type: string; pipeline_stage: string }
 
 export default function Navbar() {
   const pathname = usePathname()
@@ -36,7 +36,7 @@ export default function Navbar() {
   }, [])
 
   useEffect(() => {
-    const t = setTimeout(() => runSearch(query), 280)
+    const t = setTimeout(() => runSearch(query), 300)
     return () => clearTimeout(t)
   }, [query, runSearch])
 
@@ -141,7 +141,7 @@ export default function Navbar() {
                     >
                       <div className="min-w-0">
                         <p className="text-sm font-medium text-gray-900 truncate">{r.name}</p>
-                        <p className="text-xs text-gray-400 truncate">{r.country} · {r.surgery_type}</p>
+                        <p className="text-xs text-gray-400 truncate">{r.nationality ?? r.country} · {r.surgery_type}</p>
                       </div>
                       <span
                         className="text-[10px] font-semibold px-2 py-0.5 rounded-full text-white flex-shrink-0"
