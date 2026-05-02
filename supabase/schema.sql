@@ -343,3 +343,10 @@ ALTER TABLE public.patients
 INSERT INTO storage.buckets (id, name, public)
 VALUES ('patient-photos', 'patient-photos', true)
 ON CONFLICT (id) DO NOTHING;
+
+-- Add expected deposit amount and assigned manager
+ALTER TABLE public.patients
+  ADD COLUMN IF NOT EXISTS expected_deposit_amount NUMERIC(12, 2),
+  ADD COLUMN IF NOT EXISTS assigned_manager        UUID REFERENCES public.profiles(id);
+
+CREATE INDEX IF NOT EXISTS idx_patients_manager ON public.patients(assigned_manager);

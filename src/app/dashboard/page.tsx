@@ -46,6 +46,16 @@ function PatientCard({ patient, onStageChange }: {
         {patient.clinic && (
           <p className="text-xs text-indigo-600 mt-1 font-medium">{patient.clinic.name}</p>
         )}
+        {patient.expected_deposit_amount != null && (
+          <p className="text-xs text-emerald-700 mt-1 font-medium">
+            💰 ${Number(patient.expected_deposit_amount).toFixed(2)}
+          </p>
+        )}
+        {patient.assigned_manager_profile && (
+          <p className="text-xs text-gray-400 mt-1">
+            👤 {patient.assigned_manager_profile.full_name}
+          </p>
+        )}
       </Link>
 
       <div className="mt-3 pt-3 border-t border-gray-50">

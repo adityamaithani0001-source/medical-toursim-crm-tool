@@ -1,11 +1,11 @@
 'use client'
 // src/app/leads/new/page.tsx
 
-import { useState, useRef } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
-import { createPatient, uploadPatientPhoto } from '@/lib/db'
+import { createPatient, uploadPatientPhoto, getProfiles } from '@/lib/db'
 import { newLeadSchema } from '@/lib/validation'
-import type { LeadSource, CommsChannel, ConversionProbability } from '@/types'
+import type { LeadSource, CommsChannel, ConversionProbability, Profile } from '@/types'
 import { ErrorBoundary } from '@/app/components/ErrorBoundary'
 
 const CHANNELS: CommsChannel[] = ['whatsapp', 'kakaotalk', 'telegram', 'instagram', 'line', 'wechat', 'email']
@@ -42,6 +42,12 @@ function NewLeadContent() {
   const [arrivalDate, setArrivalDate] = useState('')
   const [arrivalTime, setArrivalTime] = useState('')
   const photoInputRef = useRef<HTMLInputElement>(null)
+  const [profiles, setProfiles] = useState<Profile[]>([])
+  const [assignedManager, setAssignedManager] = useState('')
+
+  useEffect(() => {
+    getProfiles().then(data => setProfiles((data ?? []) as Profile[])).catch(() => {})
+  }, [])
 
   const [form, setForm] = useState({
     name:                   '',
@@ -128,6 +134,8 @@ function NewLeadContent() {
         car_arranged:         false,
         assigned_rep:         null,
         assigned_coordinator: null,
+        assigned_manager:     assignedManager || null,
+        expected_deposit_amount: null,
         clinic_id:            null,
         deposit_amount:       null,
         payment_method:       null,
@@ -279,6 +287,13 @@ function NewLeadContent() {
                   <option value="low">Low</option>
                   <option value="medium">Medium</option>
                   <option value="high">High</option>
+                </Select>
+              </div>
+              <div>
+                <Label>Assigned manager</Label>
+                <Select value={assignedManager} onChange={v => setAssignedManager(v)}>
+                  <option value="">Unassigned</option>
+                  {profiles.map(p => <option key={p.id} value={p.id}>{p.full_name}</option>)}
                 </Select>
               </div>
             </div>
