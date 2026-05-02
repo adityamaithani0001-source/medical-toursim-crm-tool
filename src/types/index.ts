@@ -42,6 +42,7 @@ export interface Patient {
   dob: string | null
   nationality: string | null
   country: string
+  photo_url: string | null
   phone: string | null
   email: string | null
   past_surgery_history: string | null
@@ -63,6 +64,7 @@ export interface Patient {
   hotel_checkin: string | null
   hotel_checkout: string | null
   car_arranged: boolean
+  logistics_notes: string | null
   quote_sent_via: CommsChannel | null
   quote_sent_at: string | null
   happy_call_date: string | null

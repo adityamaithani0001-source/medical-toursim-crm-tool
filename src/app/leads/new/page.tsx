@@ -1,9 +1,9 @@
 'use client'
 // src/app/leads/new/page.tsx
 
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
-import { createPatient } from '@/lib/db'
+import { createPatient, uploadPatientPhoto } from '@/lib/db'
 import { newLeadSchema } from '@/lib/validation'
 import type { LeadSource, CommsChannel, ConversionProbability } from '@/types'
 import { ErrorBoundary } from '@/app/components/ErrorBoundary'
@@ -37,6 +37,11 @@ function NewLeadContent() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({})
+  const [photoFile, setPhotoFile] = useState<File | null>(null)
+  const [photoPreview, setPhotoPreview] = useState<string>('')
+  const [arrivalDate, setArrivalDate] = useState('')
+  const [arrivalTime, setArrivalTime] = useState('')
+  const photoInputRef = useRef<HTMLInputElement>(null)
 
   const [form, setForm] = useState({
     name:                   '',
@@ -51,9 +56,26 @@ function NewLeadContent() {
     preferred_channel:      'whatsapp' as CommsChannel,
     surgery_type:           '',
     conversion_probability: 'medium' as ConversionProbability,
-    korea_arrival_date:     '',
+    logistics_notes:        '',
     notes:                  '',
   })
+
+  const combinedArrival = arrivalDate
+    ? arrivalTime ? `${arrivalDate}T${arrivalTime}` : arrivalDate
+    : ''
+
+  const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    if (file.size > 5 * 1024 * 1024) {
+      setError('Photo must be under 5 MB.')
+      return
+    }
+    setPhotoFile(file)
+    const reader = new FileReader()
+    reader.onload = ev => setPhotoPreview(ev.target?.result as string)
+    reader.readAsDataURL(file)
+  }
 
   const set = (k: string, v: string) => {
     setForm(f => ({ ...f, [k]: v }))
@@ -71,7 +93,8 @@ function NewLeadContent() {
       phone:                form.phone || null,
       email:                form.email || null,
       past_surgery_history: form.past_surgery_history || null,
-      korea_arrival_date:   form.korea_arrival_date || null,
+      korea_arrival_date:   combinedArrival || null,
+      logistics_notes:      form.logistics_notes || null,
     })
     if (!result.success) {
       const errs: Record<string, string> = {}
@@ -85,6 +108,10 @@ function NewLeadContent() {
     }
     setLoading(true)
     try {
+      let photo_url: string | null = null
+      if (photoFile) {
+        photo_url = await uploadPatientPhoto(photoFile, form.name || 'patient')
+      }
       const patient = await createPatient({
         ...form,
         passport_name:        form.passport_name || null,
@@ -93,6 +120,8 @@ function NewLeadContent() {
         phone:                form.phone || null,
         email:                form.email || null,
         past_surgery_history: form.past_surgery_history || null,
+        photo_url,
+        logistics_notes:      form.logistics_notes || null,
         pipeline_stage:       'new_lead',
         deposit_currency:     'USD',
         airport_pickup:       false,
@@ -110,7 +139,7 @@ function NewLeadContent() {
         happy_call_date:      null,
         happy_call_type:      null,
         happy_call_outcome:   null,
-        korea_arrival_date:   form.korea_arrival_date || null,
+        korea_arrival_date:   combinedArrival || null,
         surgery_date:         null,
       })
       router.push(`/patients/${patient.id}`)
@@ -135,6 +164,34 @@ function NewLeadContent() {
           <div>
             <h2 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-4">Patient</h2>
             <div className="grid grid-cols-2 gap-4">
+              {/* Photo upload */}
+              <div className="col-span-2 flex items-center gap-4">
+                <input
+                  ref={photoInputRef}
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp"
+                  onChange={handlePhotoChange}
+                  className="hidden"
+                />
+                <button
+                  type="button"
+                  onClick={() => photoInputRef.current?.click()}
+                  className="w-16 h-16 rounded-full border-2 border-dashed border-gray-300 hover:border-indigo-400 flex items-center justify-center overflow-hidden flex-shrink-0 transition-colors"
+                >
+                  {photoPreview ? (
+                    <img src={photoPreview} alt="Preview" className="w-full h-full object-cover" />
+                  ) : (
+                    <span className="text-2xl text-gray-300">+</span>
+                  )}
+                </button>
+                <div>
+                  <p className="text-sm font-medium text-gray-700">Patient photo</p>
+                  <p className="text-xs text-gray-400 mt-0.5">JPEG, PNG or WebP · max 5 MB</p>
+                  {photoPreview && (
+                    <button type="button" onClick={() => { setPhotoFile(null); setPhotoPreview('') }} className="text-xs text-red-400 hover:text-red-600 mt-1">Remove</button>
+                  )}
+                </div>
+              </div>
               <div className="col-span-2">
                 <Label>Full name *</Label>
                 <Input value={form.name} onChange={v => set('name', v)} placeholder="Kim Soo-jin" error={fieldErrors.name} />
@@ -230,15 +287,42 @@ function NewLeadContent() {
           {/* Section: Travel */}
           <div className="pt-4 border-t border-gray-50">
             <h2 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-4">Travel</h2>
-            <div>
-              <Label>Planned arrival in Korea (date & time)</Label>
-              <Input
-                type="datetime-local"
-                value={form.korea_arrival_date}
-                onChange={v => set('korea_arrival_date', v)}
-                error={fieldErrors.korea_arrival_date}
-              />
-              <p className="text-xs text-gray-400 mt-1">Most critical qualifying factor per spec</p>
+            <div className="space-y-4">
+              <div>
+                <Label>Planned arrival in Korea</Label>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <input
+                      type="date"
+                      value={arrivalDate}
+                      onChange={e => setArrivalDate(e.target.value)}
+                      className={`w-full border rounded-xl px-4 py-2.5 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-300 ${fieldErrors.korea_arrival_date ? 'border-red-300 bg-red-50' : 'border-gray-200'}`}
+                    />
+                    <p className="text-xs text-gray-400 mt-1">Arrival date</p>
+                  </div>
+                  <div>
+                    <input
+                      type="time"
+                      value={arrivalTime}
+                      onChange={e => setArrivalTime(e.target.value)}
+                      className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-300"
+                    />
+                    <p className="text-xs text-gray-400 mt-1">Arrival time</p>
+                  </div>
+                </div>
+                {fieldErrors.korea_arrival_date && <p className="mt-1 text-xs text-red-500">{fieldErrors.korea_arrival_date}</p>}
+              </div>
+              <div>
+                <Label>Logistics Notes</Label>
+                <textarea
+                  className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-300 resize-none"
+                  rows={3}
+                  placeholder="e.g. needs airport pickup, wheelchair access, hotel booked"
+                  value={form.logistics_notes}
+                  onChange={e => set('logistics_notes', e.target.value)}
+                />
+                {fieldErrors.logistics_notes && <p className="mt-1 text-xs text-red-500">{fieldErrors.logistics_notes}</p>}
+              </div>
             </div>
           </div>
 

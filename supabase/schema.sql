@@ -333,3 +333,13 @@ CREATE INDEX IF NOT EXISTS idx_patients_nationality ON public.patients(nationali
 -- Remove language requirement (field no longer collected in UI)
 ALTER TABLE public.patients ALTER COLUMN language DROP NOT NULL;
 ALTER TABLE public.patients ALTER COLUMN language SET DEFAULT '';
+
+-- Add photo URL and logistics notes fields
+ALTER TABLE public.patients
+  ADD COLUMN IF NOT EXISTS photo_url       TEXT,
+  ADD COLUMN IF NOT EXISTS logistics_notes TEXT;
+
+-- Create storage bucket for patient photos (run once, idempotent via policy check)
+INSERT INTO storage.buckets (id, name, public)
+VALUES ('patient-photos', 'patient-photos', true)
+ON CONFLICT (id) DO NOTHING;
