@@ -52,10 +52,12 @@ export interface Patient {
   conversion_probability: ConversionProbability
   assigned_rep: string | null
   assigned_coordinator: string | null
+  assigned_manager: string | null
   pipeline_stage: PipelineStage
   korea_arrival_date: string | null
   surgery_date: string | null
   clinic_id: string | null
+  expected_deposit_amount: number | null
   deposit_amount: number | null
   deposit_currency: string
   payment_method: PaymentMethod | null
@@ -77,6 +79,7 @@ export interface Patient {
   clinic?: Clinic
   assigned_rep_profile?: Profile
   assigned_coordinator_profile?: Profile
+  assigned_manager_profile?: Profile
 }
 
 export interface Consultation {

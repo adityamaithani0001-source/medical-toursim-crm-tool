@@ -19,7 +19,8 @@ export async function getPatients(filters?: {
       *,
       clinic:clinics(id, name, surgery_types),
       assigned_rep_profile:profiles!assigned_rep(id, full_name, market),
-      assigned_coordinator_profile:profiles!assigned_coordinator(id, full_name)
+      assigned_coordinator_profile:profiles!assigned_coordinator(id, full_name),
+      assigned_manager_profile:profiles!assigned_manager(id, full_name)
     `)
     .order('created_at', { ascending: false })
 
@@ -39,7 +40,8 @@ export async function getPatient(id: string) {
       *,
       clinic:clinics(*),
       assigned_rep_profile:profiles!assigned_rep(*),
-      assigned_coordinator_profile:profiles!assigned_coordinator(*)
+      assigned_coordinator_profile:profiles!assigned_coordinator(*),
+      assigned_manager_profile:profiles!assigned_manager(*)
     `)
     .eq('id', id)
     .single()

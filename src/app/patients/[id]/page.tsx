@@ -3,9 +3,9 @@
 
 import { useEffect, useState, useRef } from 'react'
 import { useParams, useRouter } from 'next/navigation'
-import { getPatient, updatePatient, getClinics, getConsultationsForPatient, uploadPatientPhoto } from '@/lib/db'
+import { getPatient, updatePatient, getClinics, getConsultationsForPatient, uploadPatientPhoto, getProfiles } from '@/lib/db'
 import { patientUpdateSchema } from '@/lib/validation'
-import type { Patient, Clinic, Consultation, PipelineStage } from '@/types'
+import type { Patient, Clinic, Consultation, PipelineStage, Profile } from '@/types'
 import { PIPELINE_STAGES, CHANNEL_LABELS } from '@/types'
 
 const SURGERY_TYPES = ['Eyes', 'Nose', 'Face', 'Breast', 'Body', 'Other']
@@ -54,6 +54,7 @@ function PatientDetailContent() {
   const [patient, setPatient] = useState<Patient | null>(null)
   const [clinics, setClinics] = useState<Clinic[]>([])
   const [consultations, setConsultations] = useState<Consultation[]>([])
+  const [profiles, setProfiles] = useState<Profile[]>([])
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [saveError, setSaveError] = useState('')
@@ -64,11 +65,12 @@ function PatientDetailContent() {
   const photoInputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
-    Promise.all([getPatient(id), getClinics(), getConsultationsForPatient(id)])
-      .then(([p, c, cons]) => {
+    Promise.all([getPatient(id), getClinics(), getConsultationsForPatient(id), getProfiles()])
+      .then(([p, c, cons, profs]) => {
         setPatient(p as Patient)
         setClinics(c as Clinic[])
         setConsultations(cons)
+        setProfiles((profs ?? []) as Profile[])
       })
       .finally(() => setLoading(false))
   }, [id])
@@ -246,6 +248,12 @@ function PatientDetailContent() {
                   <option value="high">High</option>
                 </SelectField>
               </Field>
+              <Field label="Assigned manager">
+                <SelectField value={val('assigned_manager') ?? ''} onChange={v => set('assigned_manager', v || null)}>
+                  <option value="">Unassigned</option>
+                  {profiles.map(p => <option key={p.id} value={p.id}>{p.full_name}</option>)}
+                </SelectField>
+              </Field>
             </Grid2>
           </Section>
 
@@ -320,7 +328,15 @@ function PatientDetailContent() {
 
           <Section title="Deposit">
             <Grid2>
-              <Field label="Amount">
+              <Field label="Expected Deposit (USD)">
+                <Input
+                  type="number"
+                  value={val('expected_deposit_amount') ?? ''}
+                  onChange={v => set('expected_deposit_amount', parseFloat(v) || null)}
+                  placeholder="0.00"
+                />
+              </Field>
+              <Field label="Amount paid">
                 <Input
                   type="number"
                   value={val('deposit_amount') ?? ''}
