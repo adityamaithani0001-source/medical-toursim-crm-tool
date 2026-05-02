@@ -259,6 +259,8 @@ function ImportContent() {
         car_arranged:           false,
         assigned_rep:           null,
         assigned_coordinator:   null,
+        assigned_manager:       null,
+        expected_deposit_amount: null,
         clinic_id:              null,
         deposit_amount:         null,
         payment_method:         null,
