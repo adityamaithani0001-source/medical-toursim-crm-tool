@@ -42,7 +42,6 @@ export interface Patient {
   dob: string | null
   nationality: string | null
   country: string
-  language: string
   phone: string | null
   email: string | null
   past_surgery_history: string | null
