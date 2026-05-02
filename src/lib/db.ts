@@ -216,6 +216,17 @@ export async function searchPatients(query: string, limit = 8) {
   return data as { id: string; name: string; nationality: string | null; country: string; surgery_type: string; pipeline_stage: string }[]
 }
 
+// ── STORAGE ──────────────────────────────────────────────────
+
+export async function uploadPatientPhoto(file: File, patientName: string): Promise<string> {
+  const ext  = file.name.split('.').pop() ?? 'jpg'
+  const path = `${Date.now()}-${patientName.replace(/\s+/g, '-').toLowerCase()}.${ext}`
+  const { error } = await db().storage.from('patient-photos').upload(path, file, { upsert: true })
+  if (error) throw error
+  const { data } = db().storage.from('patient-photos').getPublicUrl(path)
+  return data.publicUrl
+}
+
 // ── CLINICS & PROFILES ───────────────────────────────────────
 
 export async function getClinics() {

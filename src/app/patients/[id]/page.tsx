@@ -1,9 +1,9 @@
 'use client'
 // src/app/patients/[id]/page.tsx
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { useParams, useRouter } from 'next/navigation'
-import { getPatient, updatePatient, getClinics, getConsultationsForPatient } from '@/lib/db'
+import { getPatient, updatePatient, getClinics, getConsultationsForPatient, uploadPatientPhoto } from '@/lib/db'
 import { patientUpdateSchema } from '@/lib/validation'
 import type { Patient, Clinic, Consultation, PipelineStage } from '@/types'
 import { PIPELINE_STAGES, CHANNEL_LABELS } from '@/types'
@@ -59,6 +59,9 @@ function PatientDetailContent() {
   const [saveError, setSaveError] = useState('')
   const [edits, setEdits] = useState<Partial<Patient>>({})
   const [dirty, setDirty] = useState(false)
+  const [photoPreview, setPhotoPreview] = useState<string>('')
+  const [photoUploading, setPhotoUploading] = useState(false)
+  const photoInputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
     Promise.all([getPatient(id), getClinics(), getConsultationsForPatient(id)])
@@ -99,6 +102,28 @@ function PatientDetailContent() {
     }
   }
 
+  const handlePhotoChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file || !patient) return
+    if (file.size > 5 * 1024 * 1024) { setSaveError('Photo must be under 5 MB.'); return }
+    const reader = new FileReader()
+    reader.onload = ev => setPhotoPreview(ev.target?.result as string)
+    reader.readAsDataURL(file)
+    setPhotoUploading(true)
+    try {
+      const url = await uploadPatientPhoto(file, patient.name)
+      const updated = await updatePatient(patient.id, { photo_url: url })
+      setPatient(updated)
+    } catch (e: unknown) {
+      setSaveError(e instanceof Error ? e.message : 'Photo upload failed')
+    } finally {
+      setPhotoUploading(false)
+    }
+  }
+
+  const getInitials = (name: string) =>
+    name.split(' ').slice(0, 2).map(w => w[0]?.toUpperCase() ?? '').join('')
+
   if (loading) return (
     <div className="flex items-center justify-center min-h-screen">
       <div className="w-8 h-8 border-2 border-indigo-600 border-t-transparent rounded-full animate-spin" />
@@ -116,6 +141,27 @@ function PatientDetailContent() {
         <div className="max-w-5xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-3">
             <button onClick={() => router.back()} className="text-gray-400 hover:text-gray-600 text-lg">←</button>
+            {/* Avatar */}
+            <input ref={photoInputRef} type="file" accept="image/jpeg,image/png,image/webp" onChange={handlePhotoChange} className="hidden" />
+            <button
+              type="button"
+              onClick={() => photoInputRef.current?.click()}
+              title="Change photo"
+              className="w-10 h-10 rounded-full overflow-hidden flex-shrink-0 border-2 border-gray-100 hover:border-indigo-300 transition-colors relative"
+            >
+              {photoPreview || patient.photo_url ? (
+                <img src={photoPreview || patient.photo_url!} alt={patient.name} className="w-full h-full object-cover" />
+              ) : (
+                <span className="w-full h-full bg-indigo-100 text-indigo-700 text-xs font-bold flex items-center justify-center">
+                  {getInitials(patient.name)}
+                </span>
+              )}
+              {photoUploading && (
+                <div className="absolute inset-0 bg-black/30 flex items-center justify-center">
+                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                </div>
+              )}
+            </button>
             <div>
               <h1 className="text-lg font-bold text-gray-900">{patient.name}</h1>
               <p className="text-xs text-gray-400">{patient.country} · {formatSurgeryTypes(patient.surgery_type)}</p>
@@ -258,6 +304,16 @@ function PatientDetailContent() {
                 label="Car / transfer arranged"
                 checked={!!(edits.car_arranged ?? patient.car_arranged)}
                 onChange={v => set('car_arranged', v)}
+              />
+            </div>
+            <div className="mt-4">
+              <label className="block text-xs font-medium text-gray-500 mb-1.5">Logistics Notes</label>
+              <textarea
+                className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-300 resize-none"
+                rows={3}
+                placeholder="e.g. needs airport pickup, wheelchair access, hotel booked"
+                value={val('logistics_notes') ?? ''}
+                onChange={e => set('logistics_notes', e.target.value)}
               />
             </div>
           </Section>

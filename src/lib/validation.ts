@@ -26,6 +26,7 @@ export const newLeadSchema = z.object({
   dob:                    isoDate.nullable().optional(),
   nationality:            z.string().max(100, 'Nationality too long').nullable().optional(),
   country:                z.string().min(1, 'Country is required').max(100, 'Country too long'),
+  photo_url:              z.string().url().nullable().optional(),
   phone:                  z.string().max(50, 'Phone too long').nullable().optional(),
   email:                  z.string().email('Must be a valid email').max(200).nullable().optional(),
   past_surgery_history:   z.string().max(2000, 'Past surgery history too long').nullable().optional(),
@@ -34,6 +35,7 @@ export const newLeadSchema = z.object({
   surgery_type:           z.string().min(1, 'Surgery type is required').max(200, 'Surgery type too long'),
   conversion_probability: z.enum(probabilities),
   korea_arrival_date:     isoDate.nullable().optional(),
+  logistics_notes:        z.string().max(2000).nullable().optional(),
   notes:                  z.string().max(2000, 'Notes too long (max 2000 chars)').optional(),
 })
 
@@ -43,6 +45,7 @@ export const patientUpdateSchema = z.object({
   dob:                    isoDate.nullable().optional(),
   nationality:            z.string().max(100).nullable().optional(),
   country:                z.string().min(1).max(100).optional(),
+  photo_url:              z.string().url().nullable().optional(),
   phone:                  z.string().max(50).nullable().optional(),
   email:                  z.string().email('Must be a valid email').max(200).nullable().optional(),
   past_surgery_history:   z.string().max(2000).nullable().optional(),
@@ -62,6 +65,7 @@ export const patientUpdateSchema = z.object({
   hotel_checkin:          isoDatetime.nullable().optional(),
   hotel_checkout:         isoDatetime.nullable().optional(),
   car_arranged:           z.boolean().optional(),
+  logistics_notes:        z.string().max(2000).nullable().optional(),
   quote_sent_via:         z.enum(commsChannels).nullable().optional(),
   quote_sent_at:          z.string().nullable().optional(),
   happy_call_date:        isoDate.nullable().optional(),
