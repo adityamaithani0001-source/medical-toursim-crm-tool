@@ -350,3 +350,7 @@ ALTER TABLE public.patients
   ADD COLUMN IF NOT EXISTS assigned_manager        UUID REFERENCES public.profiles(id);
 
 CREATE INDEX IF NOT EXISTS idx_patients_manager ON public.patients(assigned_manager);
+
+-- Change dob to TIMESTAMPTZ to capture date + time of birth
+ALTER TABLE public.patients
+  ALTER COLUMN dob TYPE TIMESTAMPTZ USING dob::TIMESTAMPTZ;

@@ -23,7 +23,7 @@ const paymentMethods = ['card', 'bank_transfer', 'cash', 'other'] as const
 export const newLeadSchema = z.object({
   name:                   z.string().min(1, 'Name is required').max(200, 'Name too long'),
   passport_name:          z.string().max(200, 'Passport name too long').nullable().optional(),
-  dob:                    isoDate.nullable().optional(),
+  dob:                    isoDatetime.nullable().optional(),
   nationality:            z.string().max(100, 'Nationality too long').nullable().optional(),
   country:                z.string().min(1, 'Country is required').max(100, 'Country too long'),
   photo_url:              z.string().url().nullable().optional(),
@@ -42,7 +42,7 @@ export const newLeadSchema = z.object({
 export const patientUpdateSchema = z.object({
   name:                   z.string().min(1).max(200).optional(),
   passport_name:          z.string().max(200).nullable().optional(),
-  dob:                    isoDate.nullable().optional(),
+  dob:                    isoDatetime.nullable().optional(),
   nationality:            z.string().max(100).nullable().optional(),
   country:                z.string().min(1).max(100).optional(),
   photo_url:              z.string().url().nullable().optional(),
@@ -107,7 +107,7 @@ export const consultationSchema = z.object({
 export const csvRowSchema = z.object({
   name:                   z.string().min(1, 'Name is required').max(200, 'Name too long'),
   passport_name:          z.string().max(200).nullable().optional(),
-  dob:                    isoDate.nullable().optional(),
+  dob:                    isoDatetime.nullable().optional(),
   nationality:            z.string().max(100).nullable().optional(),
   country:                z.string().min(1, 'Country is required').max(100, 'Country too long'),
   phone:                  z.string().max(50).nullable().optional(),

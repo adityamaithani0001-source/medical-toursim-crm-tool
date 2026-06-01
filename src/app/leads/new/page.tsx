@@ -210,7 +210,7 @@ function NewLeadContent() {
               </div>
               <div>
                 <Label>Date of birth</Label>
-                <Input type="date" value={form.dob} onChange={v => set('dob', v)} error={fieldErrors.dob} />
+                <Input type="datetime-local" value={form.dob} onChange={v => set('dob', v)} error={fieldErrors.dob} />
               </div>
               <div>
                 <Label>Nationality</Label>
