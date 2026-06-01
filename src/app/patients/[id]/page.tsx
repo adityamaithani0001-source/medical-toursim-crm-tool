@@ -219,7 +219,7 @@ function PatientDetailContent() {
                 <Input value={val('passport_name') ?? ''} onChange={v => set('passport_name', v)} placeholder="As printed on passport" />
               </Field>
               <Field label="Date of birth">
-                <Input type="date" value={val('dob') ?? ''} onChange={v => set('dob', v)} />
+                <Input type="datetime-local" value={toDatetimeLocal(val('dob'))} onChange={v => set('dob', v)} />
               </Field>
               <Field label="Nationality">
                 <SelectField value={val('nationality') ?? ''} onChange={v => set('nationality', v)}>
